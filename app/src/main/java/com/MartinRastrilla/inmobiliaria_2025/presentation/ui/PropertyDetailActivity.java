@@ -11,25 +11,29 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Inmueble;
+import com.MartinRastrilla.inmobiliaria_2025.presentation.adapter.PropertyImagesAdapter;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.InmuebleViewModel;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class PropertyDetailActivity extends AppCompatActivity {
-    private TextView tvTitle, tvAddress, tvRooms, tvPrice, tvMaxGuests, tvStatus, tvCreatedAt;
+    private TextView tvTitle, tvAddress, tvRooms, tvPrice, tvMaxGuests, tvStatus, tvCreatedAt, tvImagesTitle;
     private Button btnToggleAvailability, btnEditProperty;
     private ProgressBar progressBar;
+    private RecyclerView recyclerViewImages;
+    private PropertyImagesAdapter imagesAdapter;
     private InmuebleViewModel viewModel;
     private int propertyId;
     private Inmueble currentProperty;
+    private String baseUrl = "http://192.168.100.49:5275";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,9 +63,19 @@ public class PropertyDetailActivity extends AppCompatActivity {
         tvMaxGuests = findViewById(R.id.tvMaxGuests);
         tvStatus = findViewById(R.id.tvStatus);
         tvCreatedAt = findViewById(R.id.tvCreatedAt);
+        tvImagesTitle = findViewById(R.id.tvImagesTitle);
         btnToggleAvailability = findViewById(R.id.btnToggleAvailability);
         btnEditProperty = findViewById(R.id.btnEditProperty);
         progressBar = findViewById(R.id.progressBar);
+        recyclerViewImages = findViewById(R.id.recyclerViewImages);
+        
+        setupImagesRecyclerView();
+    }
+
+    private void setupImagesRecyclerView() {
+        imagesAdapter = new PropertyImagesAdapter(new ArrayList<>(), baseUrl);
+        recyclerViewImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recyclerViewImages.setAdapter(imagesAdapter);
     }
 
     private void initViewModel() {
@@ -118,19 +132,31 @@ public class PropertyDetailActivity extends AppCompatActivity {
         }
 
         // Estado
+        tvStatus.setTextColor(getResources().getColor(R.color.white)); // Texto siempre blanco
         if (inmueble.isAvailable()) {
             tvStatus.setText("Disponible");
-            tvStatus.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+            tvStatus.setBackgroundResource(R.drawable.status_available_background); // Fondo verde
             btnToggleAvailability.setText("Deshabilitar Propiedad");
         } else {
             tvStatus.setText("No Disponible");
-            tvStatus.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+            tvStatus.setBackgroundResource(R.drawable.status_unavailable_background); // Fondo rojo
             btnToggleAvailability.setText("Habilitar Propiedad");
         }
 
         // Fecha de creación
         if (inmueble.getCreatedAt() != null) {
             tvCreatedAt.setText("Creado: " + formatDate(inmueble.getCreatedAt()));
+        }
+
+        // Mostrar imágenes si existen
+        if (inmueble.getArchivosRoutes() != null && !inmueble.getArchivosRoutes().isEmpty()) {
+            imagesAdapter = new PropertyImagesAdapter(inmueble.getArchivosRoutes(), baseUrl);
+            recyclerViewImages.setAdapter(imagesAdapter);
+            recyclerViewImages.setVisibility(View.VISIBLE);
+            tvImagesTitle.setVisibility(View.VISIBLE);
+        } else {
+            recyclerViewImages.setVisibility(View.GONE);
+            tvImagesTitle.setVisibility(View.GONE);
         }
     }
 

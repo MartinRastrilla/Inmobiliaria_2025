@@ -14,6 +14,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/black"
             android:padding="24dp">
 
             <!-- Title -->
@@ -63,6 +64,31 @@
                 app:layout_constraintTop_toBottomOf="@id/tvStatus"
                 tools:text="Calle Falsa 123, Ciudad" />
 
+            <!-- Images Section -->
+            <TextView
+                android:id="@+id/tvImagesTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Imágenes"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvAddress" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewImages"
+                android:layout_width="0dp"
+                android:layout_height="200dp"
+                android:layout_marginTop="12dp"
+                android:background="@color/black"
+                android:orientation="horizontal"
+                android:paddingVertical="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvImagesTitle" />
+
             <!-- Divider -->
             <View
                 android:id="@+id/divider1"
@@ -72,10 +98,11 @@
                 android:layout_marginTop="24dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvAddress" />
+                app:layout_constraintTop_toBottomOf="@id/recyclerViewImages" />
 
-            <!-- Price -->
+            <!-- Price Label -->
             <TextView
+                android:id="@+id/tvPriceLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Precio"
@@ -86,6 +113,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/divider1" />
 
+            <!-- Price Value -->
             <TextView
                 android:id="@+id/tvPrice"
                 android:layout_width="wrap_content"
@@ -96,11 +124,12 @@
                 android:textStyle="bold"
                 android:layout_marginTop="8dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvAddress"
+                app:layout_constraintTop_toBottomOf="@id/tvPriceLabel"
                 tools:text="$ 150,000" />
 
-            <!-- Rooms -->
+            <!-- Rooms Label -->
             <TextView
+                android:id="@+id/tvRoomsLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Habitaciones"
@@ -111,6 +140,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvPrice" />
 
+            <!-- Rooms Value -->
             <TextView
                 android:id="@+id/tvRooms"
                 android:layout_width="wrap_content"
@@ -120,37 +150,34 @@
                 android:textSize="18sp"
                 android:layout_marginTop="8dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvPrice"
+                app:layout_constraintTop_toBottomOf="@id/tvRoomsLabel"
                 tools:text="3 habitaciones" />
 
-            <!-- Max Guests -->
             <TextView
                 android:id="@+id/tvMaxGuests"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="36dp"
                 android:text="5 huéspedes máximo"
                 android:textColor="@color/white"
                 android:textSize="18sp"
-                android:layout_marginTop="16dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvRooms"
                 tools:text="5 huéspedes máximo" />
 
-            <!-- Created At -->
             <TextView
                 android:id="@+id/tvCreatedAt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:alpha="0.6"
                 android:text="Creado: 15/01/2025"
                 android:textColor="@color/white"
                 android:textSize="12sp"
-                android:alpha="0.6"
-                android:layout_marginTop="24dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvMaxGuests"
                 tools:text="Creado: 15/01/2025" />
 
-            <!-- Buttons Container -->
             <LinearLayout
                 android:id="@+id/buttonsContainer"
                 android:layout_width="0dp"

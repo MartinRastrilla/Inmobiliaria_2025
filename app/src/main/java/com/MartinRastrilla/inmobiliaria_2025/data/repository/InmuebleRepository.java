@@ -1,6 +1,7 @@
 package com.MartinRastrilla.inmobiliaria_2025.data.repository;
 
 import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
 
 import com.MartinRastrilla.inmobiliaria_2025.data.api.ApiClient;
@@ -11,9 +12,16 @@ import com.MartinRastrilla.inmobiliaria_2025.data.model.Result;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.ToggleResponse;
 import com.MartinRastrilla.inmobiliaria_2025.utils.PreferencesHelper;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -22,10 +30,12 @@ public class InmuebleRepository {
     private static final String TAG = "InmuebleRepo";
     private InmuebleService inmuebleService;
     private PreferencesHelper preferencesHelper;
+    private Context context;
 
     public InmuebleRepository(Context context) {
         this.inmuebleService = ApiClient.getInmuebleService();
         this.preferencesHelper = new PreferencesHelper(context);
+        this.context = context;
     }
 
     public void getInmuebles(InmuebleCallback<List<Inmueble>> callback) {
@@ -131,37 +141,104 @@ public class InmuebleRepository {
         });
     }
 
-    public void createInmueble(InmuebleRequest request, InmuebleCallback<Inmueble> callback) {
+    public void createInmueble(InmuebleRequest request, List<Uri> imageUris, InmuebleCallback<Inmueble> callback) {
         String token = "Bearer " + preferencesHelper.getAuthToken();
 
-        inmuebleService.createInmueble(token, request).enqueue(new Callback<Inmueble>() {
-            @Override
-            public void onResponse(Call<Inmueble> call, Response<Inmueble> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    Inmueble inmueble = response.body();
-                    callback.onSuccess(inmueble);
-                } else {
-                    String errorMsg = "Error al crear inmueble: " + response.code();
+        try {
+            // Crear RequestBody para cada campo
+            RequestBody titlePart = createPartFromString(request.getTitle());
+            RequestBody addressPart = createPartFromString(request.getAddress());
+            RequestBody latitudePart = createPartFromString(request.getLatitude() != null ? request.getLatitude() : "");
+            RequestBody longitudePart = createPartFromString(request.getLongitude() != null ? request.getLongitude() : "");
+            RequestBody roomsPart = createPartFromString(String.valueOf(request.getRooms()));
+            RequestBody pricePart = createPartFromString(String.valueOf(request.getPrice()));
+            RequestBody maxGuestsPart = createPartFromString(request.getMaxGuests() != null ? String.valueOf(request.getMaxGuests()) : "");
 
-                    if (response.errorBody() != null) {
-                        try {
-                            String errorBody = response.errorBody().string();
-                            Log.e(TAG, "Error body: " + errorBody);
-                            errorMsg += "\n" + errorBody;
-                        } catch (IOException e) {
-                            Log.e(TAG, "Error leyendo errorBody", e);
-                        }
+            // Convertir URIs a Files y crear MultipartBody.Part para las imágenes
+            List<MultipartBody.Part> imageParts = new ArrayList<>();
+            if (imageUris != null && !imageUris.isEmpty()) {
+                for (Uri imageUri : imageUris) {
+                    File imageFile = uriToFile(imageUri);
+                    if (imageFile != null && imageFile.exists()) {
+                        RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), imageFile);
+                        MultipartBody.Part imagePart = MultipartBody.Part.createFormData("Images", imageFile.getName(), requestFile);
+                        imageParts.add(imagePart);
                     }
-
-                    callback.onError(errorMsg);
                 }
             }
 
-            @Override
-            public void onFailure(Call<Inmueble> call, Throwable t) {
-                callback.onError("Error de conexión: " + t.getMessage());
+            inmuebleService.createInmueble(
+                    token,
+                    titlePart,
+                    addressPart,
+                    latitudePart,
+                    longitudePart,
+                    roomsPart,
+                    pricePart,
+                    maxGuestsPart,
+                    imageParts
+            ).enqueue(new Callback<Inmueble>() {
+                @Override
+                public void onResponse(Call<Inmueble> call, Response<Inmueble> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Inmueble inmueble = response.body();
+                        callback.onSuccess(inmueble);
+                    } else {
+                        String errorMsg = "Error al crear inmueble: " + response.code();
+                        if (response.errorBody() != null) {
+                            try {
+                                String errorBody = response.errorBody().string();
+                                Log.e(TAG, "Error body: " + errorBody);
+                                errorMsg += "\n" + errorBody;
+                            } catch (IOException e) {
+                                Log.e(TAG, "Error leyendo errorBody", e);
+                            }
+                        }
+                        callback.onError(errorMsg);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Inmueble> call, Throwable t) {
+                    callback.onError("Error de conexión: " + t.getMessage());
+                }
+            });
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error preparando request", e);
+            callback.onError("Error preparando la solicitud: " + e.getMessage());
+        }
+    }
+
+    private RequestBody createPartFromString(String value) {
+        return RequestBody.create(MediaType.parse("text/plain"), value != null ? value : "");
+    }
+
+    private File uriToFile(Uri uri) {
+        try {
+            InputStream inputStream = context.getContentResolver().openInputStream(uri);
+            if (inputStream == null) {
+                return null;
             }
-        });
+
+            // Crear archivo temporal
+            File tempFile = File.createTempFile("image_", ".jpg", context.getCacheDir());
+            FileOutputStream outputStream = new FileOutputStream(tempFile);
+
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+
+            outputStream.close();
+            inputStream.close();
+
+            return tempFile;
+        } catch (IOException e) {
+            Log.e(TAG, "Error convirtiendo URI a File", e);
+            return null;
+        }
     }
 
     public void toggleInmuebleAvailability(int id, InmuebleCallback<Inmueble> callback) {

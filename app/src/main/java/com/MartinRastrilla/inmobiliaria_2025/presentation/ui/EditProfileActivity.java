@@ -77,7 +77,7 @@ public class EditProfileActivity extends AppCompatActivity {
 
         String profilePicRoute = preferencesHelper.getProfilePicRoute();
         if (profilePicRoute != null && !profilePicRoute.isEmpty()) {
-            String baseUrl = "http://Dominio o IP/";
+            String baseUrl = "http://192.168.100.49:5275";
             String imageUrl = baseUrl + profilePicRoute;
             Glide.with(this)
                     .load(imageUrl)
@@ -121,7 +121,7 @@ public class EditProfileActivity extends AppCompatActivity {
                 );
 
                 if (profilePicRoute != null && !profilePicRoute.isEmpty()) {
-                    String baseUrl = "http://Dominio o IP/";
+                    String baseUrl = "http://192.168.100.49:5275";
                     String imageUrl = baseUrl + profilePicRoute;
                     Glide.with(this)
                             .load(imageUrl)

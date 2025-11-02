@@ -2,6 +2,8 @@ package com.MartinRastrilla.inmobiliaria_2025.data.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 public class Inmueble {
     @SerializedName("id")
     private int id;
@@ -36,6 +38,9 @@ public class Inmueble {
     @SerializedName("updatedAt")
     private String updatedAt;
 
+    @SerializedName("archivosRoutes")
+    private List<String> archivosRoutes;
+
     public Inmueble() {}
 
     // Getters
@@ -50,6 +55,7 @@ public class Inmueble {
     public boolean isAvailable() { return available; }
     public String getCreatedAt() { return createdAt; }
     public String getUpdatedAt() { return updatedAt; }
+    public List<String> getArchivosRoutes() { return archivosRoutes; }
 
     // Setters
     public void setId(int id) { this.id = id; }
@@ -63,4 +69,5 @@ public class Inmueble {
     public void setAvailable(boolean available) { this.available = available; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+    public void setArchivosRoutes(List<String> archivosRoutes) { this.archivosRoutes = archivosRoutes; }
 }

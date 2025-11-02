@@ -1,6 +1,7 @@
 package com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel;
 
 import android.app.Application;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -65,11 +66,11 @@ public class InmuebleViewModel extends AndroidViewModel {
         });
     }
 
-    public void createInmueble(InmuebleRequest request) {
+    public void createInmueble(InmuebleRequest request, List<Uri> imageUris) {
         isLoading.postValue(true);
         errorMessage.postValue(null);
 
-        inmuebleRepository.createInmueble(request, new InmuebleRepository.InmuebleCallback<Inmueble>() {
+        inmuebleRepository.createInmueble(request, imageUris, new InmuebleRepository.InmuebleCallback<Inmueble>() {
             @Override
             public void onSuccess(Inmueble data) {
                 isLoading.postValue(false);

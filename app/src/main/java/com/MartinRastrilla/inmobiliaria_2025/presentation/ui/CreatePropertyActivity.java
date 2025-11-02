@@ -1,34 +1,49 @@
 package com.MartinRastrilla.inmobiliaria_2025.presentation.ui;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Inmueble;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.InmuebleRequest;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.InmuebleViewModel;
+import com.bumptech.glide.Glide;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CreatePropertyActivity extends AppCompatActivity {
     private EditText etTitle, etAddress, etLatitude, etLongitude, etRooms, etPrice, etMaxGuests;
-    private Button btnSave;
+    private Button btnSave, btnSelectImages;
     private ProgressBar progressBar;
     private TextView tvTitle;
+    private RecyclerView recyclerViewImages;
     private InmuebleViewModel viewModel;
     private boolean isEditMode = false;
     private int propertyId = -1;
     private Inmueble currentProperty;
+    private List<Uri> selectedImageUris = new ArrayList<>();
+    private SelectedImagesAdapter imagesAdapter;
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +57,10 @@ public class CreatePropertyActivity extends AppCompatActivity {
 
         initViews();
         initViewModel();
+        setupImagePicker();
         setupObservers();
         setupClickListeners();
+        setupImagesRecyclerView();
 
         if (isEditMode && propertyId != -1) {
             loadPropertyForEdit();
@@ -60,7 +77,9 @@ public class CreatePropertyActivity extends AppCompatActivity {
         etPrice = findViewById(R.id.etPrice);
         etMaxGuests = findViewById(R.id.etMaxGuests);
         btnSave = findViewById(R.id.btnSave);
+        btnSelectImages = findViewById(R.id.btnSelectImages);
         progressBar = findViewById(R.id.progressBar);
+        recyclerViewImages = findViewById(R.id.recyclerViewSelectedImages);
 
         if (isEditMode) {
             tvTitle.setText("Editar Propiedad");
@@ -73,6 +92,39 @@ public class CreatePropertyActivity extends AppCompatActivity {
 
     private void initViewModel() {
         viewModel = new ViewModelProvider(this).get(InmuebleViewModel.class);
+    }
+
+    private void setupImagePicker() {
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        if (result.getData().getClipData() != null) {
+                            // Múltiples imágenes seleccionadas
+                            int count = result.getData().getClipData().getItemCount();
+                            for (int i = 0; i < count; i++) {
+                                Uri imageUri = result.getData().getClipData().getItemAt(i).getUri();
+                                selectedImageUris.add(imageUri);
+                            }
+                        } else if (result.getData().getData() != null) {
+                            // Una sola imagen seleccionada
+                            selectedImageUris.add(result.getData().getData());
+                        }
+                        imagesAdapter.notifyDataSetChanged();
+                    }
+                }
+        );
+    }
+
+    private void setupImagesRecyclerView() {
+        imagesAdapter = new SelectedImagesAdapter(selectedImageUris, this::removeImage);
+        recyclerViewImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recyclerViewImages.setAdapter(imagesAdapter);
+    }
+
+    private void removeImage(int position) {
+        selectedImageUris.remove(position);
+        imagesAdapter.notifyDataSetChanged();
     }
 
     private void setupObservers() {
@@ -120,6 +172,13 @@ public class CreatePropertyActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
+        btnSelectImages.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            imagePickerLauncher.launch(Intent.createChooser(intent, "Selecciona imágenes"));
+        });
+
         btnSave.setOnClickListener(v -> {
             if (validateInput()) {
                 saveProperty();
@@ -222,14 +281,65 @@ public class CreatePropertyActivity extends AppCompatActivity {
 
         if (isEditMode) {
             // TODO: Implementar actualización cuando tengas el endpoint PUT
-            // Por ahora, solo permitimos crear
             Toast.makeText(this, "La edición se implementará próximamente", Toast.LENGTH_SHORT).show();
         } else {
-            viewModel.createInmueble(request);
+            viewModel.createInmueble(request, selectedImageUris);
         }
     }
 
     private void loadPropertyForEdit() {
         viewModel.loadInmuebleById(propertyId);
+    }
+
+    // Adapter interno para mostrar imágenes seleccionadas
+    private static class SelectedImagesAdapter extends RecyclerView.Adapter<SelectedImagesAdapter.ImageViewHolder> {
+        private List<Uri> imageUris;
+        private OnImageRemoveListener removeListener;
+
+        interface OnImageRemoveListener {
+            void onRemove(int position);
+        }
+
+        SelectedImagesAdapter(List<Uri> imageUris, OnImageRemoveListener removeListener) {
+            this.imageUris = imageUris;
+            this.removeListener = removeListener;
+        }
+
+        @Override
+        public ImageViewHolder onCreateViewHolder(android.view.ViewGroup parent, int viewType) {
+            View view = android.view.LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_selected_image, parent, false);
+            return new ImageViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(ImageViewHolder holder, int position) {
+            Glide.with(holder.itemView.getContext())
+                    .load(imageUris.get(position))
+                    .centerCrop()
+                    .into(holder.imageView);
+
+            holder.btnRemove.setOnClickListener(v -> {
+                if (removeListener != null) {
+                    removeListener.onRemove(position);
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return imageUris.size();
+        }
+
+        static class ImageViewHolder extends RecyclerView.ViewHolder {
+            ImageView imageView;
+            Button btnRemove;
+
+            ImageViewHolder(View itemView) {
+                super(itemView);
+                imageView = itemView.findViewById(R.id.ivSelectedImage);
+                btnRemove = itemView.findViewById(R.id.btnRemoveImage);
+            }
+        }
     }
 }

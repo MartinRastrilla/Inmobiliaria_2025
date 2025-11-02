@@ -20,7 +20,7 @@ import java.util.Locale;
 public class PropertyAdapter extends RecyclerView.Adapter<PropertyAdapter.PropertyViewHolder> {
     private List<Inmueble> propertyList;
     private OnPropertyClickListener listener;
-    private String baseUrl = "http://Dominio o IP/";
+    private String baseUrl = "http://192.168.100.49:5275/";
 
     public interface OnPropertyClickListener {
         void onPropertyClick(Inmueble inmueble);
@@ -89,12 +89,20 @@ public class PropertyAdapter extends RecyclerView.Adapter<PropertyAdapter.Proper
                 tvStatus.setBackgroundResource(R.drawable.status_unavailable_background);
             }
 
-            // Imagen (por ahora placeholder, luego agregaremos cuando haya ruta de foto)
-            // TODO: Cargar imagen cuando el modelo tenga ruta de foto
-            Glide.with(itemView.getContext())
-                    .load(R.drawable.card_background)
-                    .placeholder(R.drawable.card_background)
-                    .into(ivPropertyImage);
+            // Cargar imagen si existe
+            if (property.getArchivosRoutes() != null && !property.getArchivosRoutes().isEmpty()) {
+                String firstImageUrl = baseUrl + property.getArchivosRoutes().get(0);
+                Glide.with(itemView.getContext())
+                        .load(firstImageUrl)
+                        .centerCrop()
+                        .placeholder(R.drawable.card_background)
+                        .into(ivPropertyImage);
+            } else {
+                // Placeholder si no hay imágenes
+                Glide.with(itemView.getContext())
+                        .load(R.drawable.card_background)
+                        .into(ivPropertyImage);
+            }
 
             // Click listener
             itemView.setOnClickListener(v -> {

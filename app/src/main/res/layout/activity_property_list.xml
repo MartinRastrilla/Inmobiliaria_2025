@@ -7,7 +7,7 @@
     android:background="@color/black"
     tools:context=".presentation.ui.PropertyListActivity">
 
-    <!-- Toolbar/Title -->
+    <!-- AppBarLayout con Toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
@@ -19,88 +19,80 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/black"
-            app:title="Mis Propiedades"
-            app:titleTextColor="@color/white"
             app:navigationIcon="?attr/homeAsUpIndicator"
-            app:navigationIconTint="@color/white" />
+            app:navigationIconTint="@color/white"
+            app:title="Mis Propiedades"
+            app:titleTextColor="@color/white" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Content -->
-
-    <!-- Floating Action Button -->
-
-    <androidx.core.widget.NestedScrollView
+    <!-- FrameLayout para contener RecyclerView y Empty State -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <FrameLayout
+        <!-- RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewProperties"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="16dp"
+            android:paddingBottom="80dp"
+            android:visibility="gone"
+            tools:listitem="@layout/item_property" />
 
-            <!-- RecyclerView -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerViewProperties"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clipToPadding="false"
-                android:padding="16dp"
-                android:visibility="gone"
-                tools:listitem="@layout/item_property" />
+        <!-- Empty State -->
+        <LinearLayout
+            android:id="@+id/tvEmptyState"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="48dp"
+            android:visibility="gone">
 
-            <!-- Empty State -->
-            <LinearLayout
-                android:id="@+id/tvEmptyState"
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_marginBottom="16dp"
+                android:text="🏠"
+                android:textSize="64sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="No tienes propiedades aún"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:alpha="0.7"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:padding="48dp"
-                android:visibility="gone">
+                android:text="Toca el botón + para crear tu primera propiedad"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:text="🏠"
-                    android:textSize="64sp" />
+        </LinearLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="No tienes propiedades aún"
-                    android:textColor="@color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+    </FrameLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:alpha="0.7"
-                    android:gravity="center"
-                    android:text="Toca el botón + para crear tu primera propiedad"
-                    android:textColor="@color/white"
-                    android:textSize="14sp" />
-
-            </LinearLayout>
-
-        </FrameLayout>
-
-    </androidx.core.widget.NestedScrollView>
-
+    <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddProperty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
         android:layout_margin="24dp"
-        android:src="@android:drawable/ic_input_add"
         android:contentDescription="Agregar propiedad"
-        app:tint="@color/black"
+        android:src="@android:drawable/ic_input_add"
         app:backgroundTint="@color/white"
-        app:layout_anchorGravity="bottom|end" />
+        app:tint="@color/black" />
 
     <!-- Progress Bar -->
     <ProgressBar

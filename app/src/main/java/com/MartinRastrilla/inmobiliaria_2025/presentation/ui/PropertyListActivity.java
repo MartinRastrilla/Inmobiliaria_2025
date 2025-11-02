@@ -21,6 +21,7 @@ import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Inmueble;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.adapter.PropertyAdapter;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.InmuebleViewModel;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class PropertyListActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private LinearLayout tvEmptyState;
     private FloatingActionButton fabAddProperty;
+    private MaterialToolbar toolbar;
     private PropertyAdapter adapter;
     private InmuebleViewModel viewModel;
     private List<Inmueble> propertyList = new ArrayList<>();
@@ -42,6 +44,7 @@ public class PropertyListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_property_list);
 
         initViews();
+        setupToolbar();
         initViewModel();
         setupRecyclerView();
         setupObservers();
@@ -54,6 +57,16 @@ public class PropertyListActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         tvEmptyState = findViewById(R.id.tvEmptyState);
         fabAddProperty = findViewById(R.id.fabAddProperty);
+        toolbar = findViewById(R.id.toolbar);
+    }
+
+    private void setupToolbar() {
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
     }
 
     private void initViewModel() {
