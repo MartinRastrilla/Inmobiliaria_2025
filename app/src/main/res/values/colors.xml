@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="card_background">#FF1E1E1E</color>
+    <color name="card_stroke">#FF333333</color>
+    <color name="card_clickable">#FF2A2A2A</color>
+    <color name="logout_button">#FFD32F2F</color>
+    <color name="logout_button_stroke">#FFB71C1C</color>
+</resources>
