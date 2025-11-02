@@ -62,7 +62,6 @@ public class InmuebleRepository {
                 } else {
                     String errorMsg = "Error al obtener inmuebles: " + response.code();
                     
-                    // Intentar leer el error body
                     if (response.errorBody() != null) {
                         try {
                             String errorBody = response.errorBody().string();
@@ -83,7 +82,6 @@ public class InmuebleRepository {
                 String errorMsg = "Error de conexión: " + t.getMessage();
                 Log.e(TAG, errorMsg, t);
                 
-                // Log completo del stack trace
                 if (t.getCause() != null) {
                     Log.e(TAG, "Causa: " + t.getCause().getMessage(), t.getCause());
                 }
@@ -111,9 +109,9 @@ public class InmuebleRepository {
                 Log.d(TAG, "Response recibido. Code: " + response.code());
 
                 if (response.isSuccessful() && response.body() != null) {
-                    Inmueble inmueble = response.body();  // ✅ Ahora es directamente Inmueble
+                    Inmueble inmueble = response.body();
                     Log.d(TAG, "Inmueble obtenido: " + inmueble.getTitle());
-                    callback.onSuccess(inmueble);  // ✅ Pasar directamente
+                    callback.onSuccess(inmueble);
                 } else {
                     String errorMsg = "Error al obtener inmueble: " + response.code();
 
@@ -145,7 +143,6 @@ public class InmuebleRepository {
         String token = "Bearer " + preferencesHelper.getAuthToken();
 
         try {
-            // Crear RequestBody para cada campo
             RequestBody titlePart = createPartFromString(request.getTitle());
             RequestBody addressPart = createPartFromString(request.getAddress());
             RequestBody latitudePart = createPartFromString(request.getLatitude() != null ? request.getLatitude() : "");
@@ -154,7 +151,6 @@ public class InmuebleRepository {
             RequestBody pricePart = createPartFromString(String.valueOf(request.getPrice()));
             RequestBody maxGuestsPart = createPartFromString(request.getMaxGuests() != null ? String.valueOf(request.getMaxGuests()) : "");
 
-            // Convertir URIs a Files y crear MultipartBody.Part para las imágenes
             List<MultipartBody.Part> imageParts = new ArrayList<>();
             if (imageUris != null && !imageUris.isEmpty()) {
                 for (Uri imageUri : imageUris) {
@@ -220,8 +216,6 @@ public class InmuebleRepository {
             if (inputStream == null) {
                 return null;
             }
-
-            // Crear archivo temporal
             File tempFile = File.createTempFile("image_", ".jpg", context.getCacheDir());
             FileOutputStream outputStream = new FileOutputStream(tempFile);
 
@@ -261,10 +255,6 @@ public class InmuebleRepository {
                 if (response.isSuccessful() && response.body() != null) {
                     ToggleResponse toggleResponse = response.body();
                     Log.d(TAG, "Toggle exitoso: " + toggleResponse.getMessage());
-
-                    // El problema es que el callback espera un Inmueble, pero solo tenemos un boolean
-                    // Necesitamos recargar el inmueble después del toggle
-                    // Por ahora, llamamos a getInmuebleById para obtener el inmueble actualizado
                     getInmuebleById(id, callback);
                 } else {
                     String errorMsg = "Error al cambiar estado: " + response.code();

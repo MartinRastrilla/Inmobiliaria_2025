@@ -22,7 +22,6 @@ public class AuthRepository {
         try {
             if (response.errorBody() != null) {
                 String errorBody = response.errorBody().string();
-                // Parsear JSON simple
                 if (errorBody.contains("\"message\"")) {
                     int start = errorBody.indexOf("\"message\"");
                     int messageStart = errorBody.indexOf("\"", start + 10) + 1;
@@ -31,7 +30,6 @@ public class AuthRepository {
                 }
             }
         } catch (Exception e) {
-            // Si falla el parseo, mostrar código de error
         }
         return "Error " + response.code();
     }
@@ -79,7 +77,8 @@ public class AuthRepository {
                     String token = loginResponse.getToken();
 
                     preferencesHelper.saveAuthToken(token);
-                    getUserProfile(token, callback);
+                    
+                    getUserProfileForRegister(token, callback);
                 } else {
                     String errorMessage = getErrorMessage(response);
                     callback.onError(errorMessage);
@@ -141,6 +140,45 @@ public class AuthRepository {
             @Override
             public void onFailure(Call<UserResponse> call, Throwable t) {
                 callback.onError("Error al obtener datos del usuario: " + t.getMessage());
+            }
+        });
+    }
+
+    private void getUserProfileForRegister(String token, AuthCallback callback) {
+        String authToken = "Bearer " + token;
+        ApiClient.getUserService().getCurrentUser(authToken).enqueue(new Callback<UserResponse>() {
+            @Override
+            public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    UserResponse userResponse = response.body();
+
+                    preferencesHelper.saveFullUserData(
+                            preferencesHelper.getUserId() != null ? preferencesHelper.getUserId() : "",
+                            userResponse.getName(),
+                            userResponse.getLastName(),
+                            userResponse.getEmail(),
+                            userResponse.getPhone(),
+                            userResponse.getDocumentNumber(),
+                            userResponse.getFirstRole(),
+                            userResponse.getProfilePicRoute()
+                    );
+
+                    LoginResponse loginResponse = new LoginResponse();
+                    loginResponse.setToken(token);
+
+                    callback.onSuccess(loginResponse);
+                } else {
+                    LoginResponse loginResponse = new LoginResponse();
+                    loginResponse.setToken(token);
+                    callback.onSuccess(loginResponse);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserResponse> call, Throwable t) {
+                LoginResponse loginResponse = new LoginResponse();
+                loginResponse.setToken(token);
+                callback.onSuccess(loginResponse);
             }
         });
     }

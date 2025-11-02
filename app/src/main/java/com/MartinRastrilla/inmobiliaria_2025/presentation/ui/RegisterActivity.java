@@ -69,8 +69,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         authViewModel.getLoginResult().observe(this, loginResponse -> {
             if (loginResponse != null) {
-                // Navegar a MainActivity
-                Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish();
             }

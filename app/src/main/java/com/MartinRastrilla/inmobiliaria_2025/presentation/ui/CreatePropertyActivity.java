@@ -51,7 +51,6 @@ public class CreatePropertyActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_create_property);
 
-        // Verificar si es modo edición
         isEditMode = getIntent().getBooleanExtra("isEditMode", false);
         propertyId = getIntent().getIntExtra("propertyId", -1);
 
@@ -100,14 +99,12 @@ public class CreatePropertyActivity extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         if (result.getData().getClipData() != null) {
-                            // Múltiples imágenes seleccionadas
                             int count = result.getData().getClipData().getItemCount();
                             for (int i = 0; i < count; i++) {
                                 Uri imageUri = result.getData().getClipData().getItemAt(i).getUri();
                                 selectedImageUris.add(imageUri);
                             }
                         } else if (result.getData().getData() != null) {
-                            // Una sola imagen seleccionada
                             selectedImageUris.add(result.getData().getData());
                         }
                         imagesAdapter.notifyDataSetChanged();
@@ -237,7 +234,6 @@ public class CreatePropertyActivity extends AppCompatActivity {
             return false;
         }
 
-        // MaxGuests es opcional, pero si se completa debe ser válido
         if (!etMaxGuests.getText().toString().trim().isEmpty()) {
             try {
                 int maxGuests = Integer.parseInt(etMaxGuests.getText().toString().trim());
@@ -280,7 +276,6 @@ public class CreatePropertyActivity extends AppCompatActivity {
         }
 
         if (isEditMode) {
-            // TODO: Implementar actualización cuando tengas el endpoint PUT
             Toast.makeText(this, "La edición se implementará próximamente", Toast.LENGTH_SHORT).show();
         } else {
             viewModel.createInmueble(request, selectedImageUris);
@@ -291,7 +286,6 @@ public class CreatePropertyActivity extends AppCompatActivity {
         viewModel.loadInmuebleById(propertyId);
     }
 
-    // Adapter interno para mostrar imágenes seleccionadas
     private static class SelectedImagesAdapter extends RecyclerView.Adapter<SelectedImagesAdapter.ImageViewHolder> {
         private List<Uri> imageUris;
         private OnImageRemoveListener removeListener;

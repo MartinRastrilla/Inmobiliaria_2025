@@ -42,7 +42,6 @@ public class UserRepository {
     ) {
         String token = "Bearer " + preferencesHelper.getAuthToken();
 
-        //? Crear RequestBody para cada campo
         RequestBody namePart = createPartFromString(name);
         RequestBody lastNamePart = createPartFromString(lastName);
         RequestBody emailPart = createPartFromString(email);
@@ -62,7 +61,6 @@ public class UserRepository {
 
         RequestBody rolesPart = createPartFromString("");
 
-        //Foto Opcional
         MultipartBody.Part photoPart = null;
         if (imageUri != null) {
             File imageFile = uriToFile(imageUri);
@@ -89,7 +87,6 @@ public class UserRepository {
                     UpdateProfileResponse updateResponse = response.body();
                     UserResponse userData = updateResponse.getData();
 
-                    // Actualizar SharedPreferences con los nuevos datos (incluyendo profilePicRoute)
                     preferencesHelper.saveFullUserData(
                             preferencesHelper.getUserId() != null ? preferencesHelper.getUserId() : "",
                             userData.getName(),
@@ -101,7 +98,6 @@ public class UserRepository {
                             userData.getProfilePicRoute()
                     );
 
-                    // Convertir a LoginResponse para mantener compatibilidad
                     LoginResponse loginResponse = new LoginResponse();
                     loginResponse.setToken(preferencesHelper.getAuthToken());
 
@@ -124,7 +120,6 @@ public class UserRepository {
     ) {
         String token = "Bearer " + preferencesHelper.getAuthToken();
 
-        // Crear el objeto request
         ChangePasswordRequest request = new ChangePasswordRequest(
                 currentPassword,
                 newPassword,
@@ -138,7 +133,6 @@ public class UserRepository {
                     UpdateProfileResponse updateResponse = response.body();
                     UserResponse userData = updateResponse.getData();
 
-                    // Actualizar SharedPreferences con los nuevos datos
                     preferencesHelper.saveFullUserData(
                             preferencesHelper.getUserId() != null ? preferencesHelper.getUserId() : "",
                             userData.getName(),
@@ -150,7 +144,6 @@ public class UserRepository {
                             userData.getProfilePicRoute()
                     );
 
-                    // Convertir a LoginResponse para mantener compatibilidad
                     LoginResponse loginResponse = new LoginResponse();
                     loginResponse.setToken(preferencesHelper.getAuthToken());
 
@@ -176,7 +169,6 @@ public class UserRepository {
                 if (response.isSuccessful() && response.body() != null) {
                     UserResponse userResponse = response.body();
 
-                    // Actualizar SharedPreferences con los datos
                     preferencesHelper.saveFullUserData(
                             preferencesHelper.getUserId() != null ? preferencesHelper.getUserId() : "",
                             userResponse.getName(),
@@ -188,7 +180,6 @@ public class UserRepository {
                             userResponse.getProfilePicRoute()
                     );
 
-                    // Convertir a LoginResponse para mantener compatibilidad
                     LoginResponse loginResponse = new LoginResponse();
                     loginResponse.setToken(preferencesHelper.getAuthToken());
 

@@ -132,14 +132,14 @@ public class PropertyDetailActivity extends AppCompatActivity {
         }
 
         // Estado
-        tvStatus.setTextColor(getResources().getColor(R.color.white)); // Texto siempre blanco
+        tvStatus.setTextColor(getResources().getColor(R.color.white));
         if (inmueble.isAvailable()) {
             tvStatus.setText("Disponible");
-            tvStatus.setBackgroundResource(R.drawable.status_available_background); // Fondo verde
+            tvStatus.setBackgroundResource(R.drawable.status_available_background);
             btnToggleAvailability.setText("Deshabilitar Propiedad");
         } else {
             tvStatus.setText("No Disponible");
-            tvStatus.setBackgroundResource(R.drawable.status_unavailable_background); // Fondo rojo
+            tvStatus.setBackgroundResource(R.drawable.status_unavailable_background);
             btnToggleAvailability.setText("Habilitar Propiedad");
         }
 

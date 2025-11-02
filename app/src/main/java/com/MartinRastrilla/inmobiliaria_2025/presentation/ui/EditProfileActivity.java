@@ -68,7 +68,6 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private void loadUserData() {
-        // Cargar datos actuales del usuario desde SharedPreferences
         etName.setText(preferencesHelper.getName() != null ? preferencesHelper.getName() : "");
         etLastName.setText(preferencesHelper.getLastName() != null ? preferencesHelper.getLastName() : "");
         etEmail.setText(preferencesHelper.getEmail() != null ? preferencesHelper.getEmail() : "");
@@ -147,8 +146,8 @@ public class EditProfileActivity extends AppCompatActivity {
                 String email = etEmail.getText().toString().trim();
                 String phone = etPhone.getText().toString().trim();
                 String documentNumber = etDocumentNumber.getText().toString().trim();
-                String password = ""; // Vacío por ahora, se maneja en cambio de contraseña
-                List<String> roles = Arrays.asList(preferencesHelper.getRole()); // Mantener rol actual
+                String password = "";
+                List<String> roles = Arrays.asList(preferencesHelper.getRole());
 
                 userViewModel.updateProfile(
                         name, lastName, email, password,
@@ -208,7 +207,6 @@ public class EditProfileActivity extends AppCompatActivity {
             String confirmPassword = etConfirmPassword.getText().toString().trim();
 
             if (validatePasswordChange(newPassword, confirmPassword)) {
-                // ✅ Usar el nuevo método especializado
                 userViewModel.updatePassword(currentPassword, newPassword, confirmPassword);
             }
         });
@@ -254,7 +252,6 @@ public class EditProfileActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             selectedImageUri = data.getData();
-            // Mostrar imagen seleccionada
             Glide.with(this)
                     .load(selectedImageUri)
                     .circleCrop()

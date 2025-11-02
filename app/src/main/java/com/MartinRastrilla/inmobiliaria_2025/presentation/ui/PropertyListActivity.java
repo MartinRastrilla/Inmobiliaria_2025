@@ -128,7 +128,6 @@ public class PropertyListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Recargar propiedades cuando vuelve a esta pantalla (por si se creó o editó una)
         loadProperties();
     }
 }

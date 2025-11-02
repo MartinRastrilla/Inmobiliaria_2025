@@ -72,15 +72,12 @@ public class PropertyAdapter extends RecyclerView.Adapter<PropertyAdapter.Proper
             tvPropertyTitle.setText(property.getTitle());
             tvPropertyAddress.setText(property.getAddress());
 
-            // Formatear precio
             NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("es", "AR"));
             tvPropertyPrice.setText(formatter.format(property.getPrice()));
 
-            // Habitaciones
             String roomsText = property.getRooms() + " habitación" + (property.getRooms() > 1 ? "es" : "");
             tvPropertyRooms.setText(roomsText);
 
-            // Estado
             if (property.isAvailable()) {
                 tvStatus.setText("Disponible");
                 tvStatus.setBackgroundResource(R.drawable.status_available_background);
@@ -89,7 +86,6 @@ public class PropertyAdapter extends RecyclerView.Adapter<PropertyAdapter.Proper
                 tvStatus.setBackgroundResource(R.drawable.status_unavailable_background);
             }
 
-            // Cargar imagen si existe
             if (property.getArchivosRoutes() != null && !property.getArchivosRoutes().isEmpty()) {
                 String firstImageUrl = baseUrl + property.getArchivosRoutes().get(0);
                 Glide.with(itemView.getContext())
@@ -98,13 +94,11 @@ public class PropertyAdapter extends RecyclerView.Adapter<PropertyAdapter.Proper
                         .placeholder(R.drawable.card_background)
                         .into(ivPropertyImage);
             } else {
-                // Placeholder si no hay imágenes
                 Glide.with(itemView.getContext())
                         .load(R.drawable.card_background)
                         .into(ivPropertyImage);
             }
 
-            // Click listener
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onPropertyClick(property);
