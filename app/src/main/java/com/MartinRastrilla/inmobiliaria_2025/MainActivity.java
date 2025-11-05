@@ -12,6 +12,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.MartinRastrilla.inmobiliaria_2025.presentation.ui.ContractListActivity;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.ui.EditProfileActivity;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.ui.LoginActivity;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.ui.PropertyListActivity;
@@ -64,7 +65,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         paymentsCard.setOnClickListener(v -> {
-            // TODO: Implementar navegación a Pagos y Contratos
+            Intent intent = new Intent(MainActivity.this, ContractListActivity.class);
+            startActivity(intent);
         });
 
         btnLogout.setOnClickListener(v -> {

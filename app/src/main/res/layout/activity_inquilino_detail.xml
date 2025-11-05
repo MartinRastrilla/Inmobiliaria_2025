@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".presentation.ui.InquilinoDetailActivity">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/black"
+            android:padding="24dp">
+
+            <!-- Name -->
+            <TextView
+                android:id="@+id/tvInquilinoName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Nombre"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Pepe" />
+
+            <!-- Last Name -->
+            <TextView
+                android:id="@+id/tvInquilinoLastName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Apellido"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvInquilinoName"
+                tools:text="Inquilino" />
+
+            <!-- Divider 1 -->
+            <View
+                android:id="@+id/divider1"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:background="@color/card_background"
+                android:layout_marginTop="24dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvInquilinoLastName" />
+
+            <!-- Document Label -->
+            <TextView
+                android:id="@+id/tvDocumentLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DNI"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:alpha="0.7"
+                android:layout_marginTop="24dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider1" />
+
+            <!-- Document Value -->
+            <TextView
+                android:id="@+id/tvInquilinoDocument"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="22333444"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvDocumentLabel"
+                tools:text="22333444" />
+
+            <!-- Phone Label -->
+            <TextView
+                android:id="@+id/tvPhoneLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Teléfono"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:alpha="0.7"
+                android:layout_marginTop="24dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvInquilinoDocument" />
+
+            <!-- Phone Value -->
+            <TextView
+                android:id="@+id/tvInquilinoPhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2664718256"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvPhoneLabel"
+                tools:text="2664718256"
+                tools:visibility="visible" />
+
+            <!-- Email Label -->
+            <TextView
+                android:id="@+id/tvEmailLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Email"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:alpha="0.7"
+                android:layout_marginTop="24dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvInquilinoPhone" />
+
+            <!-- Email Value -->
+            <TextView
+                android:id="@+id/tvInquilinoEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="pinquilino@gmail.com"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvEmailLabel"
+                tools:text="pinquilino@gmail.com"
+                tools:visibility="visible" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Progress Bar -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+</FrameLayout>

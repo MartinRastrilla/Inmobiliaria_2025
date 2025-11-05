@@ -9,7 +9,9 @@ public class ApiClient {
     private static AuthService authService;
     private static UserService userService;
     private static InmuebleService inmuebleService;
-
+    private static ContratoService contratoService;
+    private static InquilinoService inquilinoService;
+    private static PagoService pagoService;
 
     public static Retrofit getRetrofitInstance() {
         if (retrofit == null) {
@@ -40,5 +42,26 @@ public class ApiClient {
             inmuebleService = getRetrofitInstance().create(InmuebleService.class);
         }
         return inmuebleService;
+    }
+
+    public static ContratoService getContratoService() {
+        if (contratoService == null) {
+            contratoService = getRetrofitInstance().create(ContratoService.class);
+        }
+        return contratoService;
+    }
+
+    public static InquilinoService getInquilinoService() {
+        if (inquilinoService == null) {
+            inquilinoService = getRetrofitInstance().create(InquilinoService.class);
+        }
+        return inquilinoService;
+    }
+
+    public static PagoService getPagoService() {
+        if (pagoService == null) {
+            pagoService = getRetrofitInstance().create(PagoService.class);
+        }
+        return pagoService;
     }
 }
