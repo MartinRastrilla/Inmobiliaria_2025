@@ -77,6 +77,64 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Search Address Input -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilSearchAddress"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Buscar dirección"
+                app:boxStrokeColor="@color/white"
+                app:hintTextColor="@color/white"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tilAddress">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etSearchAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/white" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/tvMapTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Ubicación seleccionada"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tilSearchAddress" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardMapContainer"
+                android:layout_width="0dp"
+                android:layout_height="220dp"
+                android:layout_marginTop="12dp"
+                android:visibility="gone"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvMapTitle">
+
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/mapFragment"
+                    android:name="com.google.android.gms.maps.SupportMapFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </androidx.cardview.widget.CardView>
+
             <!-- Latitude & Longitude Row -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilLatitude"
@@ -85,11 +143,12 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="8dp"
                 android:hint="Latitud"
+                android:visibility="gone"
                 app:boxStrokeColor="@color/white"
                 app:hintTextColor="@color/white"
                 app:layout_constraintEnd_toStartOf="@id/tilLongitude"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tilAddress"
+                app:layout_constraintTop_toBottomOf="@id/cardMapContainer"
                 app:layout_constraintWidth_percent="0.48">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -109,11 +168,12 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginStart="8dp"
                 android:hint="Longitud"
+                android:visibility="gone"
                 app:boxStrokeColor="@color/white"
                 app:hintTextColor="@color/white"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/tilLatitude"
-                app:layout_constraintTop_toBottomOf="@id/tilAddress"
+                app:layout_constraintTop_toBottomOf="@id/cardMapContainer"
                 app:layout_constraintWidth_percent="0.48">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -138,7 +198,7 @@
                 app:hintTextColor="@color/white"
                 app:layout_constraintEnd_toStartOf="@id/tilPrice"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tilLatitude"
+                app:layout_constraintTop_toBottomOf="@id/cardMapContainer"
                 app:layout_constraintWidth_percent="0.48">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -163,7 +223,7 @@
                 app:hintTextColor="@color/white"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/tilRooms"
-                app:layout_constraintTop_toBottomOf="@id/tilLatitude"
+                app:layout_constraintTop_toBottomOf="@id/cardMapContainer"
                 app:layout_constraintWidth_percent="0.48">
 
                 <com.google.android.material.textfield.TextInputEditText

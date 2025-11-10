@@ -2,27 +2,36 @@ package com.MartinRastrilla.inmobiliaria_2025;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.MartinRastrilla.inmobiliaria_2025.presentation.ui.BaseActivity;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.ui.ContractListActivity;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.ui.EditProfileActivity;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.ui.LoginActivity;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.ui.PropertyListActivity;
-import com.MartinRastrilla.inmobiliaria_2025.utils.PreferencesHelper;
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.navigation.NavigationView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     private TextView tvWelcome, tvUserInfo;
     private Button btnLogout;
     private LinearLayout propertiesCard, paymentsCard, profileCard;
-    private PreferencesHelper preferencesHelper;
+
+    @Override
+    public void setContentView(int layoutResID) {
+        super.setContentView(layoutResID);
+        
+        drawerLayout = findViewById(R.id.drawerLayout);
+        navigationView = findViewById(R.id.navigationView);
+        toolbar = findViewById(R.id.toolbar);
+        setupDrawer();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,39 +50,34 @@ public class MainActivity extends AppCompatActivity {
         propertiesCard = findViewById(R.id.propertiesCard);
         paymentsCard = findViewById(R.id.paymentsCard);
         profileCard = findViewById(R.id.profileCard);
-        preferencesHelper = new PreferencesHelper(this);
     }
 
     private void setupUserInfo() {
         String email = preferencesHelper.getEmail();
         String name = preferencesHelper.getName();
         String lastname = preferencesHelper.getLastName();
+        String fullName = name + " " + lastname;
 
-        tvWelcome.setText("¡Bienvenido/a " + name + " " + lastname + "!");
+        tvWelcome.setText("¡Bienvenido/a " + fullName + "!");
         tvUserInfo.setText("Email: " + email);
+        updateNavHeader();
     }
 
     private void setupClickListeners() {
         profileCard.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, EditProfileActivity.class);
-            startActivity(intent);
+            navigateToActivity(EditProfileActivity.class);
         });
 
         propertiesCard.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, PropertyListActivity.class);
-            startActivity(intent);
+            navigateToActivity(PropertyListActivity.class);
         });
 
         paymentsCard.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ContractListActivity.class);
-            startActivity(intent);
+            navigateToActivity(ContractListActivity.class);
         });
 
         btnLogout.setOnClickListener(v -> {
-            preferencesHelper.clearUserData();
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
+            performLogout();
         });
     }
 }

@@ -6,8 +6,6 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -21,13 +19,14 @@ import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Inmueble;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.adapter.PropertyAdapter;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.InmuebleViewModel;
+import com.MartinRastrilla.inmobiliaria_2025.utils.ToastHelper;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PropertyListActivity extends AppCompatActivity {
+public class PropertyListActivity extends BaseActivity {
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private LinearLayout tvEmptyState;
@@ -61,12 +60,9 @@ public class PropertyListActivity extends AppCompatActivity {
     }
 
     private void setupToolbar() {
-        setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setTitle("Mis Propiedades");
         }
-        toolbar.setNavigationOnClickListener(v -> finish());
     }
 
     private void initViewModel() {
@@ -75,7 +71,6 @@ public class PropertyListActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         adapter = new PropertyAdapter(propertyList, inmueble -> {
-            // Navegar a detalles
             Intent intent = new Intent(PropertyListActivity.this, PropertyDetailActivity.class);
             intent.putExtra("propertyId", inmueble.getId());
             startActivity(intent);
@@ -96,7 +91,7 @@ public class PropertyListActivity extends AppCompatActivity {
 
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
-                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+                ToastHelper.showError(this, error);
             }
         });
 

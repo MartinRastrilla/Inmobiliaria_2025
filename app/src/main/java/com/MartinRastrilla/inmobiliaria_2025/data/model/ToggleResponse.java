@@ -7,7 +7,7 @@ public class ToggleResponse {
     private String message;
 
     @SerializedName("data")
-    private boolean data;
+    private Inmueble data;
 
     public ToggleResponse() {}
 
@@ -19,11 +19,11 @@ public class ToggleResponse {
         this.message = message;
     }
 
-    public boolean getData() {
+    public Inmueble getData() {
         return data;
     }
 
-    public void setData(boolean data) {
+    public void setData(Inmueble data) {
         this.data = data;
     }
 }

@@ -11,6 +11,8 @@ import com.MartinRastrilla.inmobiliaria_2025.data.model.InmuebleRequest;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Result;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.ToggleResponse;
 import com.MartinRastrilla.inmobiliaria_2025.utils.PreferencesHelper;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,6 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -31,6 +36,14 @@ public class InmuebleRepository {
     private InmuebleService inmuebleService;
     private PreferencesHelper preferencesHelper;
     private Context context;
+    private static final DecimalFormat PRICE_FORMAT;
+
+    static {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        symbols.setDecimalSeparator('.');
+        PRICE_FORMAT = new DecimalFormat("0.##", symbols);
+        PRICE_FORMAT.setGroupingUsed(false);
+    }
 
     public InmuebleRepository(Context context) {
         this.inmuebleService = ApiClient.getInmuebleService();
@@ -60,18 +73,7 @@ public class InmuebleRepository {
                     Log.d(TAG, "Inmuebles obtenidos: " + inmuebles.size());
                     callback.onSuccess(inmuebles);
                 } else {
-                    String errorMsg = "Error al obtener inmuebles: " + response.code();
-                    
-                    if (response.errorBody() != null) {
-                        try {
-                            String errorBody = response.errorBody().string();
-                            Log.e(TAG, "Error body: " + errorBody);
-                            errorMsg += "\n" + errorBody;
-                        } catch (IOException e) {
-                            Log.e(TAG, "Error leyendo errorBody", e);
-                        }
-                    }
-                    
+                    String errorMsg = extractErrorMessage(response);
                     Log.e(TAG, errorMsg);
                     callback.onError(errorMsg);
                 }
@@ -113,18 +115,7 @@ public class InmuebleRepository {
                     Log.d(TAG, "Inmueble obtenido: " + inmueble.getTitle());
                     callback.onSuccess(inmueble);
                 } else {
-                    String errorMsg = "Error al obtener inmueble: " + response.code();
-
-                    if (response.errorBody() != null) {
-                        try {
-                            String errorBody = response.errorBody().string();
-                            Log.e(TAG, "Error body: " + errorBody);
-                            errorMsg += "\n" + errorBody;
-                        } catch (IOException e) {
-                            Log.e(TAG, "Error leyendo errorBody", e);
-                        }
-                    }
-
+                    String errorMsg = extractErrorMessage(response);
                     Log.e(TAG, errorMsg);
                     callback.onError(errorMsg);
                 }
@@ -148,7 +139,8 @@ public class InmuebleRepository {
             RequestBody latitudePart = createPartFromString(request.getLatitude() != null ? request.getLatitude() : "");
             RequestBody longitudePart = createPartFromString(request.getLongitude() != null ? request.getLongitude() : "");
             RequestBody roomsPart = createPartFromString(String.valueOf(request.getRooms()));
-            RequestBody pricePart = createPartFromString(String.valueOf(request.getPrice()));
+            String priceValue = PRICE_FORMAT.format(request.getPrice());
+            RequestBody pricePart = createPartFromString(priceValue);
             RequestBody maxGuestsPart = createPartFromString(request.getMaxGuests() != null ? String.valueOf(request.getMaxGuests()) : "");
 
             List<MultipartBody.Part> imageParts = new ArrayList<>();
@@ -180,16 +172,7 @@ public class InmuebleRepository {
                         Inmueble inmueble = response.body();
                         callback.onSuccess(inmueble);
                     } else {
-                        String errorMsg = "Error al crear inmueble: " + response.code();
-                        if (response.errorBody() != null) {
-                            try {
-                                String errorBody = response.errorBody().string();
-                                Log.e(TAG, "Error body: " + errorBody);
-                                errorMsg += "\n" + errorBody;
-                            } catch (IOException e) {
-                                Log.e(TAG, "Error leyendo errorBody", e);
-                            }
-                        }
+                        String errorMsg = extractErrorMessage(response);
                         callback.onError(errorMsg);
                     }
                 }
@@ -257,18 +240,7 @@ public class InmuebleRepository {
                     Log.d(TAG, "Toggle exitoso: " + toggleResponse.getMessage());
                     getInmuebleById(id, callback);
                 } else {
-                    String errorMsg = "Error al cambiar estado: " + response.code();
-
-                    if (response.errorBody() != null) {
-                        try {
-                            String errorBody = response.errorBody().string();
-                            Log.e(TAG, "Error body: " + errorBody);
-                            errorMsg += "\n" + errorBody;
-                        } catch (IOException e) {
-                            Log.e(TAG, "Error leyendo errorBody", e);
-                        }
-                    }
-
+                    String errorMsg = extractErrorMessage(response);
                     Log.e(TAG, errorMsg);
                     callback.onError(errorMsg);
                 }
@@ -283,8 +255,38 @@ public class InmuebleRepository {
         });
     }
 
+    private <T> String extractErrorMessage(Response<T> response) {
+        String defaultMsg = "Error: " + response.code();
+        
+        if (response.errorBody() != null) {
+            try {
+                String errorBody = response.errorBody().string();
+                Log.d(TAG, "Error body: " + errorBody);
+                
+                // Intentar parsear el JSON para extraer el mensaje
+                Gson gson = new Gson();
+                try {
+                    ErrorMessage errorMessage = gson.fromJson(errorBody, ErrorMessage.class);
+                    if (errorMessage.message != null && !errorMessage.message.isEmpty()) {
+                        return errorMessage.message;
+                    }
+                } catch (JsonSyntaxException e) {
+                    Log.d(TAG, "No se pudo parsear el JSON, usando mensaje por defecto");
+                }
+            } catch (IOException e) {
+                Log.e(TAG, "Error leyendo errorBody", e);
+            }
+        }
+        
+        return defaultMsg;
+    }
+
     public interface InmuebleCallback<T> {
         void onSuccess(T data);
         void onError(String error);
+    }
+
+    private static class ErrorMessage {
+        String message;
     }
 }

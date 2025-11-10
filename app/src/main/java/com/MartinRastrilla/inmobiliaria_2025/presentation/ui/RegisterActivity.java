@@ -7,8 +7,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -19,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.MartinRastrilla.inmobiliaria_2025.MainActivity;
 import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.AuthViewModel;
+import com.MartinRastrilla.inmobiliaria_2025.utils.ToastHelper;
 
 public class RegisterActivity extends AppCompatActivity {
     private EditText etName, etLastName, etEmail, etPassword, etConfirmPassword, etPhone, etDocumentNumber;
@@ -63,7 +62,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         authViewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
-                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+                ToastHelper.showError(this, error);
             }
         });
 

@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.cardview.widget.CardView;
 
 import androidx.activity.EdgeToEdge;
@@ -26,12 +24,13 @@ import com.MartinRastrilla.inmobiliaria_2025.presentation.adapter.InquilinoAdapt
 import com.MartinRastrilla.inmobiliaria_2025.presentation.ui.InquilinoDetailActivity;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.ui.PaymentListActivity;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.ContratoViewModel;
+import com.MartinRastrilla.inmobiliaria_2025.utils.ToastHelper;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class ContractDetailActivity extends AppCompatActivity {
+public class ContractDetailActivity extends BaseActivity {
     private TextView tvContractId, tvStartEndDate, tvTotalPrice, tvMonthlyPrice, tvStatus, tvCreatedAt;
     private TextView tvInmuebleName, tvInmuebleAddress;
     private TextView tvInquilinosTitle, tvPaymentsTitle;
@@ -51,7 +50,7 @@ public class ContractDetailActivity extends AppCompatActivity {
 
         contratoId = getIntent().getIntExtra("contratoId", -1);
         if (contratoId == -1) {
-            Toast.makeText(this, "Error: ID de contrato no válido", Toast.LENGTH_SHORT).show();
+            ToastHelper.showError(this, "Error: ID de contrato no válido");
             finish();
             return;
         }
@@ -62,6 +61,8 @@ public class ContractDetailActivity extends AppCompatActivity {
         setupObservers();
         setupClickListeners();
         loadContratoDetails();
+        
+        setActivityTitle("Detalle de Contrato");
     }
 
     private void initViews() {
@@ -87,7 +88,6 @@ public class ContractDetailActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         inquilinoAdapter = new InquilinoAdapter(new ArrayList<>(), inquilino -> {
-            // Navegar a detalles del inquilino
             Intent intent = new Intent(ContractDetailActivity.this, InquilinoDetailActivity.class);
             intent.putExtra("inquilinoId", inquilino.getId());
             startActivity(intent);
@@ -103,7 +103,7 @@ public class ContractDetailActivity extends AppCompatActivity {
 
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
-                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+                ToastHelper.showError(this, error);
                 finish();
             }
         });
@@ -189,7 +189,6 @@ public class ContractDetailActivity extends AppCompatActivity {
 
         if (contrato.getInquilinos() != null && !contrato.getInquilinos().isEmpty()) {
             inquilinoAdapter = new InquilinoAdapter(contrato.getInquilinos(), inquilino -> {
-                // Navegar a detalles del inquilino
                 Intent intent = new Intent(ContractDetailActivity.this, InquilinoDetailActivity.class);
                 intent.putExtra("inquilinoId", inquilino.getId());
                 startActivity(intent);
@@ -202,7 +201,6 @@ public class ContractDetailActivity extends AppCompatActivity {
             tvInquilinosTitle.setVisibility(View.GONE);
         }
 
-        // Mostrar sección de pagos
         cvPayments.setVisibility(View.VISIBLE);
     }
 

@@ -64,6 +64,41 @@
                 app:layout_constraintTop_toBottomOf="@id/tvStatus"
                 tools:text="Calle Falsa 123, Ciudad" />
 
+            <!-- Map Section -->
+            <TextView
+                android:id="@+id/tvMapTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ubicación"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvAddress" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/mapCard"
+                android:layout_width="0dp"
+                android:layout_height="250dp"
+                android:layout_marginTop="12dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvMapTitle">
+
+                <fragment
+                    android:id="@+id/mapFragment"
+                    android:name="com.google.android.gms.maps.SupportMapFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </androidx.cardview.widget.CardView>
+
             <!-- Images Section -->
             <TextView
                 android:id="@+id/tvImagesTitle"
@@ -75,7 +110,7 @@
                 android:textStyle="bold"
                 android:layout_marginTop="24dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvAddress" />
+                app:layout_constraintTop_toBottomOf="@id/mapCard" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewImages"

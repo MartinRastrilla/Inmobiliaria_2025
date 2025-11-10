@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -20,12 +18,13 @@ import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Contrato;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.adapter.ContratoAdapter;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.ContratoViewModel;
+import com.MartinRastrilla.inmobiliaria_2025.utils.ToastHelper;
 import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContractListActivity extends AppCompatActivity {
+public class ContractListActivity extends BaseActivity {
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private LinearLayout tvEmptyState;
@@ -56,12 +55,9 @@ public class ContractListActivity extends AppCompatActivity {
     }
 
     private void setupToolbar() {
-        setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setTitle("Contratos y Pagos");
         }
-        toolbar.setNavigationOnClickListener(v -> finish());
     }
 
     private void initViewModel() {
@@ -70,7 +66,6 @@ public class ContractListActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         adapter = new ContratoAdapter(contratoList, contrato -> {
-            // Navegar a detalles
             Intent intent = new Intent(ContractListActivity.this, ContractDetailActivity.class);
             intent.putExtra("contratoId", contrato.getId());
             startActivity(intent);
@@ -90,7 +85,7 @@ public class ContractListActivity extends AppCompatActivity {
 
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
-                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+                ToastHelper.showError(this, error);
             }
         });
 

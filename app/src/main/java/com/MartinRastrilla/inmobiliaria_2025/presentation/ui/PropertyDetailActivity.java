@@ -6,11 +6,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,21 +17,31 @@ import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Inmueble;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.adapter.PropertyImagesAdapter;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.InmuebleViewModel;
+import com.MartinRastrilla.inmobiliaria_2025.utils.ToastHelper;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class PropertyDetailActivity extends AppCompatActivity {
-    private TextView tvTitle, tvAddress, tvRooms, tvPrice, tvMaxGuests, tvStatus, tvCreatedAt, tvImagesTitle;
+public class PropertyDetailActivity extends BaseActivity implements OnMapReadyCallback {
+    private TextView tvTitle, tvAddress, tvRooms, tvPrice, tvMaxGuests, tvStatus, tvCreatedAt, tvImagesTitle, tvMapTitle;
     private Button btnToggleAvailability, btnEditProperty;
     private ProgressBar progressBar;
     private RecyclerView recyclerViewImages;
+    private CardView mapCard;
     private PropertyImagesAdapter imagesAdapter;
     private InmuebleViewModel viewModel;
     private int propertyId;
     private Inmueble currentProperty;
     private String baseUrl = "http://192.168.100.49:5275";
+    private GoogleMap googleMap;
+    private SupportMapFragment mapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +51,7 @@ public class PropertyDetailActivity extends AppCompatActivity {
 
         propertyId = getIntent().getIntExtra("propertyId", -1);
         if (propertyId == -1) {
-            Toast.makeText(this, "Error: ID de propiedad no válido", Toast.LENGTH_SHORT).show();
+            ToastHelper.showError(this, "Error: ID de propiedad no válido");
             finish();
             return;
         }
@@ -53,6 +61,8 @@ public class PropertyDetailActivity extends AppCompatActivity {
         setupObservers();
         setupClickListeners();
         loadPropertyDetails();
+        
+        setActivityTitle("Detalle de Propiedad");
     }
 
     private void initViews() {
@@ -64,18 +74,29 @@ public class PropertyDetailActivity extends AppCompatActivity {
         tvStatus = findViewById(R.id.tvStatus);
         tvCreatedAt = findViewById(R.id.tvCreatedAt);
         tvImagesTitle = findViewById(R.id.tvImagesTitle);
+        tvMapTitle = findViewById(R.id.tvMapTitle);
         btnToggleAvailability = findViewById(R.id.btnToggleAvailability);
         btnEditProperty = findViewById(R.id.btnEditProperty);
         progressBar = findViewById(R.id.progressBar);
         recyclerViewImages = findViewById(R.id.recyclerViewImages);
+        mapCard = findViewById(R.id.mapCard);
         
         setupImagesRecyclerView();
+        setupMap();
     }
 
     private void setupImagesRecyclerView() {
         imagesAdapter = new PropertyImagesAdapter(new ArrayList<>(), baseUrl);
         recyclerViewImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recyclerViewImages.setAdapter(imagesAdapter);
+    }
+
+    private void setupMap() {
+        mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.mapFragment);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
     }
 
     private void initViewModel() {
@@ -91,7 +112,7 @@ public class PropertyDetailActivity extends AppCompatActivity {
 
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
-                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+                ToastHelper.showError(this, error);
             }
         });
 
@@ -99,6 +120,7 @@ public class PropertyDetailActivity extends AppCompatActivity {
             if (inmueble != null) {
                 currentProperty = inmueble;
                 displayPropertyDetails(inmueble);
+                showPropertyLocation(inmueble);
             }
         });
 
@@ -106,7 +128,8 @@ public class PropertyDetailActivity extends AppCompatActivity {
             if (inmueble != null) {
                 currentProperty = inmueble;
                 displayPropertyDetails(inmueble);
-                Toast.makeText(this, "Estado actualizado correctamente", Toast.LENGTH_SHORT).show();
+                showPropertyLocation(inmueble);
+                ToastHelper.showSuccess(this, getToggleMessage(inmueble));
             }
         });
     }
@@ -160,15 +183,70 @@ public class PropertyDetailActivity extends AppCompatActivity {
         }
     }
 
+    private void showPropertyLocation(Inmueble inmueble) {
+        if (googleMap == null || inmueble == null) {
+            return;
+        }
+
+        String latString = inmueble.getLatitude();
+        String lngString = inmueble.getLongitude();
+
+        if (latString == null || lngString == null || latString.isEmpty() || lngString.isEmpty()) {
+            hideMap();
+            return;
+        }
+
+        try {
+            double latitude = Double.parseDouble(latString);
+            double longitude = Double.parseDouble(lngString);
+
+            LatLng propertyLatLng = new LatLng(latitude, longitude);
+
+            googleMap.clear();
+            googleMap.addMarker(new MarkerOptions()
+                    .position(propertyLatLng)
+                    .title(inmueble.getTitle())
+                    .snippet(inmueble.getAddress()));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(propertyLatLng, 15f));
+
+            showMap();
+        } catch (NumberFormatException ex) {
+            hideMap();
+        }
+    }
+
+    private void showMap() {
+        if (mapCard != null) {
+            mapCard.setVisibility(View.VISIBLE);
+        }
+        if (tvMapTitle != null) {
+            tvMapTitle.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hideMap() {
+        if (mapCard != null) {
+            mapCard.setVisibility(View.GONE);
+        }
+        if (tvMapTitle != null) {
+            tvMapTitle.setVisibility(View.GONE);
+        }
+    }
+
     private String formatDate(String dateString) {
         try {
-            // Formato: "2025-01-15T10:30:00" -> "15/01/2025"
             String datePart = dateString.split("T")[0];
             String[] parts = datePart.split("-");
             return parts[2] + "/" + parts[1] + "/" + parts[0];
         } catch (Exception e) {
             return dateString;
         }
+    }
+
+    private String getToggleMessage(Inmueble inmueble) {
+        return inmueble.isAvailable()
+                ? "La propiedad ahora está disponible"
+                : "La propiedad no está disponible ahora";
     }
 
     private void setupClickListeners() {
@@ -208,9 +286,18 @@ public class PropertyDetailActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onMapReady(GoogleMap map) {
+        googleMap = map;
+        if (currentProperty != null) {
+            showPropertyLocation(currentProperty);
+        } else {
+            hideMap();
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
-        // Recargar detalles por si se editó la propiedad
         if (propertyId != -1) {
             loadPropertyDetails();
         }

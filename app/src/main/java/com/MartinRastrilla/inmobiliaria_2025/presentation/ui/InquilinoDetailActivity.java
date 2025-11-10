@@ -4,8 +4,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -13,8 +11,9 @@ import androidx.lifecycle.ViewModelProvider;
 import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Inquilino;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.InquilinoViewModel;
+import com.MartinRastrilla.inmobiliaria_2025.utils.ToastHelper;
 
-public class InquilinoDetailActivity extends AppCompatActivity {
+public class InquilinoDetailActivity extends BaseActivity {
     private TextView tvInquilinoName, tvInquilinoLastName, tvInquilinoDocument, tvInquilinoPhone, tvInquilinoEmail;
     private ProgressBar progressBar;
     private InquilinoViewModel viewModel;
@@ -29,7 +28,7 @@ public class InquilinoDetailActivity extends AppCompatActivity {
 
         inquilinoId = getIntent().getIntExtra("inquilinoId", -1);
         if (inquilinoId == -1) {
-            Toast.makeText(this, "Error: ID de inquilino no válido", Toast.LENGTH_SHORT).show();
+            ToastHelper.showError(this, "Error: ID de inquilino no válido");
             finish();
             return;
         }
@@ -38,6 +37,8 @@ public class InquilinoDetailActivity extends AppCompatActivity {
         initViewModel();
         setupObservers();
         loadInquilinoDetails();
+        
+        setActivityTitle("Detalle de Inquilino");
     }
 
     private void initViews() {
@@ -60,7 +61,7 @@ public class InquilinoDetailActivity extends AppCompatActivity {
 
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
-                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+                ToastHelper.showError(this, error);
                 finish();
             }
         });

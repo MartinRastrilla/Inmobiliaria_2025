@@ -1,23 +1,26 @@
 package com.MartinRastrilla.inmobiliaria_2025.presentation.ui;
 
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.cardview.widget.CardView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,17 +29,38 @@ import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Inmueble;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.InmuebleRequest;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.InmuebleViewModel;
+import com.MartinRastrilla.inmobiliaria_2025.utils.ToastHelper;
 import com.bumptech.glide.Glide;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
-public class CreatePropertyActivity extends AppCompatActivity {
+public class CreatePropertyActivity extends BaseActivity implements OnMapReadyCallback {
+    private static final String TAG = "CreatePropertyActivity";
+    private static final long SEARCH_DELAY_MS = 800L;
     private EditText etTitle, etAddress, etLatitude, etLongitude, etRooms, etPrice, etMaxGuests;
+    private TextInputEditText etSearchAddress;
     private Button btnSave, btnSelectImages;
     private ProgressBar progressBar;
-    private TextView tvTitle;
+    private TextView tvTitle, tvMapTitle;
     private RecyclerView recyclerViewImages;
+    private CardView cardMapContainer;
     private InmuebleViewModel viewModel;
     private boolean isEditMode = false;
     private int propertyId = -1;
@@ -44,6 +68,14 @@ public class CreatePropertyActivity extends AppCompatActivity {
     private List<Uri> selectedImageUris = new ArrayList<>();
     private SelectedImagesAdapter imagesAdapter;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private PlacesClient placesClient;
+    private AutocompleteSessionToken autocompleteSessionToken;
+    private Handler searchHandler;
+    private Runnable searchRunnable;
+    private SupportMapFragment mapFragment;
+    private GoogleMap googleMap;
+    private LatLng selectedLatLng;
+    private boolean suppressSearchTextChanges = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,9 +92,15 @@ public class CreatePropertyActivity extends AppCompatActivity {
         setupObservers();
         setupClickListeners();
         setupImagesRecyclerView();
+        initPlaces();
+        setupMap();
+        setupSearchField();
 
         if (isEditMode && propertyId != -1) {
             loadPropertyForEdit();
+            setActivityTitle("Editar Propiedad");
+        } else {
+            setActivityTitle("Crear Propiedad");
         }
     }
 
@@ -75,10 +113,14 @@ public class CreatePropertyActivity extends AppCompatActivity {
         etRooms = findViewById(R.id.etRooms);
         etPrice = findViewById(R.id.etPrice);
         etMaxGuests = findViewById(R.id.etMaxGuests);
+        etSearchAddress = findViewById(R.id.etSearchAddress);
         btnSave = findViewById(R.id.btnSave);
         btnSelectImages = findViewById(R.id.btnSelectImages);
         progressBar = findViewById(R.id.progressBar);
         recyclerViewImages = findViewById(R.id.recyclerViewSelectedImages);
+        tvMapTitle = findViewById(R.id.tvMapTitle);
+        cardMapContainer = findViewById(R.id.cardMapContainer);
+        searchHandler = new Handler(Looper.getMainLooper());
 
         if (isEditMode) {
             tvTitle.setText("Editar Propiedad");
@@ -132,7 +174,7 @@ public class CreatePropertyActivity extends AppCompatActivity {
 
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
-                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+                ToastHelper.showError(this, error);
             }
         });
 
@@ -146,7 +188,7 @@ public class CreatePropertyActivity extends AppCompatActivity {
         viewModel.getInmuebleCreated().observe(this, inmueble -> {
             if (inmueble != null) {
                 String message = isEditMode ? "Propiedad actualizada exitosamente" : "Propiedad creada exitosamente";
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                ToastHelper.showSuccess(this, message);
                 finish();
             }
         });
@@ -155,6 +197,12 @@ public class CreatePropertyActivity extends AppCompatActivity {
     private void fillFormWithPropertyData(Inmueble inmueble) {
         etTitle.setText(inmueble.getTitle());
         etAddress.setText(inmueble.getAddress());
+        if (etSearchAddress != null) {
+            suppressSearchTextChanges = true;
+            etSearchAddress.setText(inmueble.getAddress());
+            etSearchAddress.setSelection(etSearchAddress.getText() != null ? etSearchAddress.getText().length() : 0);
+            suppressSearchTextChanges = false;
+        }
         if (inmueble.getLatitude() != null) {
             etLatitude.setText(inmueble.getLatitude());
         }
@@ -166,6 +214,7 @@ public class CreatePropertyActivity extends AppCompatActivity {
         if (inmueble.getMaxGuests() != null) {
             etMaxGuests.setText(String.valueOf(inmueble.getMaxGuests()));
         }
+        updateMapFromCoordinates();
     }
 
     private void setupClickListeners() {
@@ -181,6 +230,210 @@ public class CreatePropertyActivity extends AppCompatActivity {
                 saveProperty();
             }
         });
+    }
+
+    private void initPlaces() {
+        if (placesClient != null) {
+            return;
+        }
+
+        String apiKey = getMapsApiKey();
+        if (TextUtils.isEmpty(apiKey)) {
+            Log.w(TAG, "No se encontró la API key de Google Maps en el Manifest.");
+            ToastHelper.showWarning(this, "No se encontró la API key de Google Maps");
+            return;
+        }
+
+        if (!Places.isInitialized()) {
+            Places.initialize(getApplicationContext(), apiKey);
+        }
+
+        placesClient = Places.createClient(this);
+        autocompleteSessionToken = AutocompleteSessionToken.newInstance();
+    }
+
+    private String getMapsApiKey() {
+        try {
+            ApplicationInfo applicationInfo = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
+            Bundle bundle = applicationInfo.metaData;
+            if (bundle != null) {
+                return bundle.getString("com.google.android.geo.API_KEY");
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Error obteniendo la API key de Google Maps", e);
+        }
+        return null;
+    }
+
+    private void setupMap() {
+        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
+    }
+
+    private void setupSearchField() {
+        if (etSearchAddress == null) {
+            return;
+        }
+
+        etSearchAddress.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (suppressSearchTextChanges || searchHandler == null) {
+                    return;
+                }
+
+                if (searchRunnable != null) {
+                    searchHandler.removeCallbacks(searchRunnable);
+                }
+
+                final String query = s.toString().trim();
+
+                if (query.length() < 3) {
+                    return;
+                }
+
+                searchRunnable = () -> performSearch(query);
+                searchHandler.postDelayed(searchRunnable, SEARCH_DELAY_MS);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+    }
+
+    private void performSearch(String query) {
+        if (placesClient == null || TextUtils.isEmpty(query)) {
+            return;
+        }
+
+        FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
+                .setSessionToken(autocompleteSessionToken)
+                .setQuery(query)
+                .build();
+
+        placesClient.findAutocompletePredictions(request)
+                .addOnSuccessListener(response -> {
+                    if (!response.getAutocompletePredictions().isEmpty()) {
+                        AutocompletePrediction prediction = response.getAutocompletePredictions().get(0);
+                        fetchPlaceDetails(prediction.getPlaceId());
+                    } else {
+                        ToastHelper.showInfo(this, "No se encontraron resultados para la dirección ingresada");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error buscando dirección", e);
+                    ToastHelper.showError(this, "No se pudo obtener la ubicación");
+                });
+    }
+
+    private void fetchPlaceDetails(String placeId) {
+        if (placesClient == null) {
+            return;
+        }
+
+        FetchPlaceRequest request = FetchPlaceRequest.builder(placeId,
+                        Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG))
+                .setSessionToken(autocompleteSessionToken)
+                .build();
+
+        placesClient.fetchPlace(request)
+                .addOnSuccessListener(response -> {
+                    Place place = response.getPlace();
+                    LatLng latLng = place.getLatLng();
+                    if (latLng == null) {
+                        ToastHelper.showInfo(this, "No se encontraron coordenadas para la dirección seleccionada");
+                        return;
+                    }
+
+                    selectedLatLng = latLng;
+                    String address = place.getAddress();
+                    if (address != null) {
+                        etAddress.setText(address);
+                        if (etSearchAddress != null) {
+                            suppressSearchTextChanges = true;
+                            etSearchAddress.setText(address);
+                            etSearchAddress.setSelection(address.length());
+                            suppressSearchTextChanges = false;
+                        }
+                    }
+
+                    updateMapPosition(latLng, address, place.getName());
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error obteniendo detalles del lugar", e);
+                    ToastHelper.showError(this, "No se pudo obtener la ubicación seleccionada");
+                });
+    }
+
+    private void updateMapPosition(LatLng latLng, String address, String title) {
+        if (latLng == null) {
+            hideMap();
+            return;
+        }
+
+        selectedLatLng = latLng;
+
+        if (cardMapContainer != null && cardMapContainer.getVisibility() != View.VISIBLE) {
+            cardMapContainer.setVisibility(View.VISIBLE);
+        }
+
+        if (tvMapTitle != null && tvMapTitle.getVisibility() != View.VISIBLE) {
+            tvMapTitle.setVisibility(View.VISIBLE);
+        }
+
+        if (googleMap != null) {
+            googleMap.clear();
+            googleMap.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .title(!TextUtils.isEmpty(title) ? title : "Ubicación seleccionada")
+                    .snippet(address));
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
+        }
+
+        etLatitude.setText(String.format(Locale.US, "%.6f", latLng.latitude));
+        etLongitude.setText(String.format(Locale.US, "%.6f", latLng.longitude));
+    }
+
+    private void updateMapFromCoordinates() {
+        if (etLatitude == null || etLongitude == null) {
+            return;
+        }
+
+        String latStr = etLatitude.getText().toString().trim();
+        String lngStr = etLongitude.getText().toString().trim();
+
+        if (TextUtils.isEmpty(latStr) || TextUtils.isEmpty(lngStr)) {
+            hideMap();
+            return;
+        }
+
+        try {
+            double latitude = Double.parseDouble(latStr);
+            double longitude = Double.parseDouble(lngStr);
+            updateMapPosition(new LatLng(latitude, longitude), etAddress.getText().toString(), null);
+        } catch (NumberFormatException e) {
+            hideMap();
+        }
+    }
+
+    private void hideMap() {
+        if (googleMap != null) {
+            googleMap.clear();
+        }
+        selectedLatLng = null;
+        if (cardMapContainer != null) {
+            cardMapContainer.setVisibility(View.GONE);
+        }
+        if (tvMapTitle != null) {
+            tvMapTitle.setVisibility(View.GONE);
+        }
     }
 
     private boolean validateInput() {
@@ -276,7 +529,7 @@ public class CreatePropertyActivity extends AppCompatActivity {
         }
 
         if (isEditMode) {
-            Toast.makeText(this, "La edición se implementará próximamente", Toast.LENGTH_SHORT).show();
+            ToastHelper.showInfo(this, "La edición se implementará próximamente");
         } else {
             viewModel.createInmueble(request, selectedImageUris);
         }
@@ -284,6 +537,29 @@ public class CreatePropertyActivity extends AppCompatActivity {
 
     private void loadPropertyForEdit() {
         viewModel.loadInmuebleById(propertyId);
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        this.googleMap = googleMap;
+        if (googleMap != null) {
+            googleMap.getUiSettings().setZoomControlsEnabled(true);
+            googleMap.getUiSettings().setMapToolbarEnabled(true);
+        }
+
+        if (selectedLatLng != null) {
+            updateMapPosition(selectedLatLng, etAddress.getText().toString(), null);
+        } else {
+            updateMapFromCoordinates();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (searchHandler != null && searchRunnable != null) {
+            searchHandler.removeCallbacks(searchRunnable);
+        }
+        super.onDestroy();
     }
 
     private static class SelectedImagesAdapter extends RecyclerView.Adapter<SelectedImagesAdapter.ImageViewHolder> {

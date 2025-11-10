@@ -8,8 +8,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -20,12 +18,13 @@ import androidx.lifecycle.ViewModelProvider;
 import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.UserViewModel;
 import com.MartinRastrilla.inmobiliaria_2025.utils.PreferencesHelper;
+import com.MartinRastrilla.inmobiliaria_2025.utils.ToastHelper;
 import com.bumptech.glide.Glide;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class EditProfileActivity extends AppCompatActivity {
+public class EditProfileActivity extends BaseActivity {
     private static final int PICK_IMAGE_REQUEST = 1;
 
     private EditText etName, etLastName, etEmail, etPhone, etDocumentNumber;
@@ -47,6 +46,8 @@ public class EditProfileActivity extends AppCompatActivity {
         loadUserData();
         setupObservers();
         setupClickListeners();
+        
+        setActivityTitle("Editar Perfil");
     }
 
     private void initViews() {
@@ -93,13 +94,13 @@ public class EditProfileActivity extends AppCompatActivity {
 
         userViewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
-                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+                ToastHelper.showError(this, error);
             }
         });
 
         userViewModel.getUpdateResult().observe(this, loginResponse -> {
             if (loginResponse != null) {
-                Toast.makeText(this, "Perfil actualizado exitosamente", Toast.LENGTH_SHORT).show();
+                ToastHelper.showSuccess(this, "Perfil actualizado exitosamente");
 
                 String name = etName.getText().toString().trim();
                 String lastName = etLastName.getText().toString().trim();
@@ -221,27 +222,27 @@ public class EditProfileActivity extends AppCompatActivity {
 
     private boolean validatePasswordChange(String newPassword, String confirmPassword) {
         if (!newPassword.equals(confirmPassword)) {
-            Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show();
+            ToastHelper.showWarning(this, "Las contraseñas no coinciden");
             return false;
         }
 
         if (newPassword.length() < 8) {
-            Toast.makeText(this, "La contraseña debe tener al menos 8 caracteres", Toast.LENGTH_SHORT).show();
+            ToastHelper.showWarning(this, "La contraseña debe tener al menos 8 caracteres");
             return false;
         }
 
         if (!newPassword.matches(".*\\d.*")) {
-            Toast.makeText(this, "La contraseña debe tener al menos 1 número", Toast.LENGTH_SHORT).show();
+            ToastHelper.showWarning(this, "La contraseña debe tener al menos 1 número");
             return false;
         }
 
         if (!newPassword.matches(".*[A-Z].*")) {
-            Toast.makeText(this, "La contraseña debe tener al menos 1 letra mayúscula", Toast.LENGTH_SHORT).show();
+            ToastHelper.showWarning(this, "La contraseña debe tener al menos 1 letra mayúscula");
             return false;
         }
 
         if (!newPassword.matches(".*[a-z].*")) {
-            Toast.makeText(this, "La contraseña debe tener al menos 1 letra minúscula", Toast.LENGTH_SHORT).show();
+            ToastHelper.showWarning(this, "La contraseña debe tener al menos 1 letra minúscula");
             return false;
         }
         return true;
