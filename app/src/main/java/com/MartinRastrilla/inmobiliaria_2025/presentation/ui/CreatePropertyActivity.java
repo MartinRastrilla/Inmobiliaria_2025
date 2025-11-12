@@ -27,7 +27,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Inmueble;
-import com.MartinRastrilla.inmobiliaria_2025.data.model.InmuebleRequest;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.InmuebleViewModel;
 import com.MartinRastrilla.inmobiliaria_2025.utils.ToastHelper;
 import com.bumptech.glide.Glide;
@@ -226,8 +225,54 @@ public class CreatePropertyActivity extends BaseActivity implements OnMapReadyCa
         });
 
         btnSave.setOnClickListener(v -> {
-            if (validateInput()) {
-                saveProperty();
+            String title = etTitle.getText().toString().trim();
+            String address = etAddress.getText().toString().trim();
+            String roomsStr = etRooms.getText().toString().trim();
+            String priceStr = etPrice.getText().toString().trim();
+            String maxGuestsStr = etMaxGuests.getText().toString().trim();
+            String latitude = etLatitude.getText().toString().trim();
+            String longitude = etLongitude.getText().toString().trim();
+
+            InmuebleViewModel.ValidationResult validationResult = 
+                    InmuebleViewModel.validatePropertyInputs(title, address, roomsStr, priceStr, maxGuestsStr);
+
+            if (validationResult.isValid()) {
+                viewModel.createInmuebleFromInputs(
+                        title, address, latitude, longitude,
+                        roomsStr, priceStr, maxGuestsStr, selectedImageUris
+                );
+            } else {
+                // Mostrar errores en los campos
+                if (validationResult.getTitleError() != null) {
+                    etTitle.setError(validationResult.getTitleError());
+                    etTitle.requestFocus();
+                }
+                if (validationResult.getAddressError() != null) {
+                    etAddress.setError(validationResult.getAddressError());
+                    if (validationResult.getTitleError() == null) {
+                        etAddress.requestFocus();
+                    }
+                }
+                if (validationResult.getRoomsError() != null) {
+                    etRooms.setError(validationResult.getRoomsError());
+                    if (validationResult.getTitleError() == null && validationResult.getAddressError() == null) {
+                        etRooms.requestFocus();
+                    }
+                }
+                if (validationResult.getPriceError() != null) {
+                    etPrice.setError(validationResult.getPriceError());
+                    if (validationResult.getTitleError() == null && validationResult.getAddressError() == null 
+                            && validationResult.getRoomsError() == null) {
+                        etPrice.requestFocus();
+                    }
+                }
+                if (validationResult.getMaxGuestsError() != null) {
+                    etMaxGuests.setError(validationResult.getMaxGuestsError());
+                    if (validationResult.getTitleError() == null && validationResult.getAddressError() == null 
+                            && validationResult.getRoomsError() == null && validationResult.getPriceError() == null) {
+                        etMaxGuests.requestFocus();
+                    }
+                }
             }
         });
     }
@@ -436,104 +481,6 @@ public class CreatePropertyActivity extends BaseActivity implements OnMapReadyCa
         }
     }
 
-    private boolean validateInput() {
-        if (etTitle.getText().toString().trim().isEmpty()) {
-            etTitle.setError("El título es requerido");
-            etTitle.requestFocus();
-            return false;
-        }
-
-        if (etAddress.getText().toString().trim().isEmpty()) {
-            etAddress.setError("La dirección es requerida");
-            etAddress.requestFocus();
-            return false;
-        }
-
-        if (etRooms.getText().toString().trim().isEmpty()) {
-            etRooms.setError("El número de habitaciones es requerido");
-            etRooms.requestFocus();
-            return false;
-        }
-
-        try {
-            int rooms = Integer.parseInt(etRooms.getText().toString().trim());
-            if (rooms <= 0) {
-                etRooms.setError("El número de habitaciones debe ser mayor a 0");
-                etRooms.requestFocus();
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            etRooms.setError("Número de habitaciones inválido");
-            etRooms.requestFocus();
-            return false;
-        }
-
-        if (etPrice.getText().toString().trim().isEmpty()) {
-            etPrice.setError("El precio es requerido");
-            etPrice.requestFocus();
-            return false;
-        }
-
-        try {
-            double price = Double.parseDouble(etPrice.getText().toString().trim());
-            if (price <= 0) {
-                etPrice.setError("El precio debe ser mayor a 0");
-                etPrice.requestFocus();
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            etPrice.setError("Precio inválido");
-            etPrice.requestFocus();
-            return false;
-        }
-
-        if (!etMaxGuests.getText().toString().trim().isEmpty()) {
-            try {
-                int maxGuests = Integer.parseInt(etMaxGuests.getText().toString().trim());
-                if (maxGuests <= 0) {
-                    etMaxGuests.setError("El número de huéspedes debe ser mayor a 0");
-                    etMaxGuests.requestFocus();
-                    return false;
-                }
-            } catch (NumberFormatException e) {
-                etMaxGuests.setError("Número de huéspedes inválido");
-                etMaxGuests.requestFocus();
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private void saveProperty() {
-        InmuebleRequest request = new InmuebleRequest();
-        request.setTitle(etTitle.getText().toString().trim());
-        request.setAddress(etAddress.getText().toString().trim());
-
-        String latitude = etLatitude.getText().toString().trim();
-        if (!latitude.isEmpty()) {
-            request.setLatitude(latitude);
-        }
-
-        String longitude = etLongitude.getText().toString().trim();
-        if (!longitude.isEmpty()) {
-            request.setLongitude(longitude);
-        }
-
-        request.setRooms(Integer.parseInt(etRooms.getText().toString().trim()));
-        request.setPrice(Double.parseDouble(etPrice.getText().toString().trim()));
-
-        String maxGuestsStr = etMaxGuests.getText().toString().trim();
-        if (!maxGuestsStr.isEmpty()) {
-            request.setMaxGuests(Integer.parseInt(maxGuestsStr));
-        }
-
-        if (isEditMode) {
-            ToastHelper.showInfo(this, "La edición se implementará próximamente");
-        } else {
-            viewModel.createInmueble(request, selectedImageUris);
-        }
-    }
 
     private void loadPropertyForEdit() {
         viewModel.loadInmuebleById(propertyId);

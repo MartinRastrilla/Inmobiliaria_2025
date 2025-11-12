@@ -17,6 +17,7 @@ import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Inmueble;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.adapter.PropertyImagesAdapter;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.InmuebleViewModel;
+import com.MartinRastrilla.inmobiliaria_2025.utils.FormatterUtils;
 import com.MartinRastrilla.inmobiliaria_2025.utils.ToastHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -25,9 +26,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 
 public class PropertyDetailActivity extends BaseActivity implements OnMapReadyCallback {
     private TextView tvTitle, tvAddress, tvRooms, tvPrice, tvMaxGuests, tvStatus, tvCreatedAt, tvImagesTitle, tvMapTitle;
@@ -129,7 +128,7 @@ public class PropertyDetailActivity extends BaseActivity implements OnMapReadyCa
                 currentProperty = inmueble;
                 displayPropertyDetails(inmueble);
                 showPropertyLocation(inmueble);
-                ToastHelper.showSuccess(this, getToggleMessage(inmueble));
+                ToastHelper.showSuccess(this, InmuebleViewModel.getToggleMessage(inmueble));
             }
         });
     }
@@ -139,16 +138,14 @@ public class PropertyDetailActivity extends BaseActivity implements OnMapReadyCa
         tvAddress.setText(inmueble.getAddress());
 
         // Habitaciones
-        String roomsText = inmueble.getRooms() + " habitación" + (inmueble.getRooms() > 1 ? "es" : "");
-        tvRooms.setText(roomsText);
+        tvRooms.setText(FormatterUtils.formatRoomsText(inmueble.getRooms()));
 
         // Precio
-        NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("es", "AR"));
-        tvPrice.setText(formatter.format(inmueble.getPrice()));
+        tvPrice.setText(FormatterUtils.formatPrice(inmueble.getPrice()));
 
         // Máximo de huéspedes
         if (inmueble.getMaxGuests() != null) {
-            tvMaxGuests.setText(inmueble.getMaxGuests() + " huéspedes máximo");
+            tvMaxGuests.setText(FormatterUtils.formatMaxGuestsText(inmueble.getMaxGuests()));
             tvMaxGuests.setVisibility(View.VISIBLE);
         } else {
             tvMaxGuests.setVisibility(View.GONE);
@@ -168,7 +165,7 @@ public class PropertyDetailActivity extends BaseActivity implements OnMapReadyCa
 
         // Fecha de creación
         if (inmueble.getCreatedAt() != null) {
-            tvCreatedAt.setText("Creado: " + formatDate(inmueble.getCreatedAt()));
+            tvCreatedAt.setText(FormatterUtils.formatCreatedAtText(inmueble.getCreatedAt()));
         }
 
         // Mostrar imágenes si existen
@@ -233,22 +230,6 @@ public class PropertyDetailActivity extends BaseActivity implements OnMapReadyCa
         }
     }
 
-    private String formatDate(String dateString) {
-        try {
-            String datePart = dateString.split("T")[0];
-            String[] parts = datePart.split("-");
-            return parts[2] + "/" + parts[1] + "/" + parts[0];
-        } catch (Exception e) {
-            return dateString;
-        }
-    }
-
-    private String getToggleMessage(Inmueble inmueble) {
-        return inmueble.isAvailable()
-                ? "La propiedad ahora está disponible"
-                : "La propiedad no está disponible ahora";
-    }
-
     private void setupClickListeners() {
         btnToggleAvailability.setOnClickListener(v -> {
             if (currentProperty != null) {
@@ -267,9 +248,7 @@ public class PropertyDetailActivity extends BaseActivity implements OnMapReadyCa
     }
 
     private void showToggleConfirmationDialog() {
-        String message = currentProperty.isAvailable()
-                ? "¿Estás seguro de que deseas deshabilitar esta propiedad?"
-                : "¿Estás seguro de que deseas habilitar esta propiedad?";
+        String message = InmuebleViewModel.getToggleConfirmationMessage(currentProperty);
 
         new AlertDialog.Builder(this)
                 .setTitle("Confirmar")

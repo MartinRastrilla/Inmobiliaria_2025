@@ -24,11 +24,10 @@ import com.MartinRastrilla.inmobiliaria_2025.presentation.adapter.InquilinoAdapt
 import com.MartinRastrilla.inmobiliaria_2025.presentation.ui.InquilinoDetailActivity;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.ui.PaymentListActivity;
 import com.MartinRastrilla.inmobiliaria_2025.presentation.viewmodel.ContratoViewModel;
+import com.MartinRastrilla.inmobiliaria_2025.utils.FormatterUtils;
 import com.MartinRastrilla.inmobiliaria_2025.utils.ToastHelper;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 
 public class ContractDetailActivity extends BaseActivity {
     private TextView tvContractId, tvStartEndDate, tvTotalPrice, tvMonthlyPrice, tvStatus, tvCreatedAt;
@@ -135,17 +134,16 @@ public class ContractDetailActivity extends BaseActivity {
     }
 
     private void displayContratoDetails(Contrato contrato) {
-        tvContractId.setText("Contrato #" + contrato.getId());
+        tvContractId.setText(FormatterUtils.formatContractId(contrato.getId()));
 
-        String startDate = formatDate(contrato.getStartDate());
-        String endDate = formatDate(contrato.getEndDate());
+        String startDate = FormatterUtils.formatDate(contrato.getStartDate());
+        String endDate = FormatterUtils.formatDate(contrato.getEndDate());
         tvStartEndDate.setText(startDate + " - " + endDate);
 
-        NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("es", "AR"));
-        tvTotalPrice.setText(formatter.format(contrato.getTotalPrice()));
+        tvTotalPrice.setText(FormatterUtils.formatPrice(contrato.getTotalPrice()));
 
         if (contrato.getMonthlyPrice() != null && contrato.getMonthlyPrice() > 0) {
-            tvMonthlyPrice.setText("Precio mensual: " + formatter.format(contrato.getMonthlyPrice()));
+            tvMonthlyPrice.setText(FormatterUtils.formatMonthlyPriceText(contrato.getMonthlyPrice()));
             tvMonthlyPrice.setVisibility(View.VISIBLE);
         } else {
             tvMonthlyPrice.setVisibility(View.GONE);
@@ -175,7 +173,7 @@ public class ContractDetailActivity extends BaseActivity {
         }
 
         if (contrato.getCreatedAt() != null) {
-            tvCreatedAt.setText("Creado: " + formatDate(contrato.getCreatedAt()));
+            tvCreatedAt.setText(FormatterUtils.formatCreatedAtText(contrato.getCreatedAt()));
         }
 
         if (contrato.getInmueble() != null) {
@@ -202,16 +200,6 @@ public class ContractDetailActivity extends BaseActivity {
         }
 
         cvPayments.setVisibility(View.VISIBLE);
-    }
-
-    private String formatDate(String dateString) {
-        try {
-            String datePart = dateString.split("T")[0];
-            String[] parts = datePart.split("-");
-            return parts[2] + "/" + parts[1] + "/" + parts[0];
-        } catch (Exception e) {
-            return dateString;
-        }
     }
 
     private void loadContratoDetails() {

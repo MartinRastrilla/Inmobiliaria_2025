@@ -10,10 +10,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Contrato;
+import com.MartinRastrilla.inmobiliaria_2025.utils.FormatterUtils;
 
-import java.text.NumberFormat;
 import java.util.List;
-import java.util.Locale;
 
 public class ContratoAdapter extends RecyclerView.Adapter<ContratoAdapter.ContratoViewHolder> {
     private List<Contrato> contratoList;
@@ -63,11 +62,10 @@ public class ContratoAdapter extends RecyclerView.Adapter<ContratoAdapter.Contra
             if (contrato.getInmueble() != null) {
                 tvContractTitle.setText(contrato.getInmueble().getTitle());
             } else {
-                tvContractTitle.setText("Contrato #" + contrato.getId());
+                tvContractTitle.setText(FormatterUtils.formatContractId(contrato.getId()));
             }
 
-            NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("es", "AR"));
-            tvContractPrice.setText(formatter.format(contrato.getTotalPrice()));
+            tvContractPrice.setText(FormatterUtils.formatPrice(contrato.getTotalPrice()));
 
             String statusText = contrato.getStatusText();
             tvContractStatus.setText(statusText);

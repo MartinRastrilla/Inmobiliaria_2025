@@ -11,11 +11,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Inmueble;
+import com.MartinRastrilla.inmobiliaria_2025.utils.FormatterUtils;
 import com.bumptech.glide.Glide;
 
-import java.text.NumberFormat;
 import java.util.List;
-import java.util.Locale;
 
 public class PropertyAdapter extends RecyclerView.Adapter<PropertyAdapter.PropertyViewHolder> {
     private List<Inmueble> propertyList;
@@ -72,11 +71,9 @@ public class PropertyAdapter extends RecyclerView.Adapter<PropertyAdapter.Proper
             tvPropertyTitle.setText(property.getTitle());
             tvPropertyAddress.setText(property.getAddress());
 
-            NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("es", "AR"));
-            tvPropertyPrice.setText(formatter.format(property.getPrice()));
+            tvPropertyPrice.setText(FormatterUtils.formatPrice(property.getPrice()));
 
-            String roomsText = property.getRooms() + " habitación" + (property.getRooms() > 1 ? "es" : "");
-            tvPropertyRooms.setText(roomsText);
+            tvPropertyRooms.setText(FormatterUtils.formatRoomsText(property.getRooms()));
 
             if (property.isAvailable()) {
                 tvStatus.setText("Disponible");

@@ -10,10 +10,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.MartinRastrilla.inmobiliaria_2025.R;
 import com.MartinRastrilla.inmobiliaria_2025.data.model.Pago;
+import com.MartinRastrilla.inmobiliaria_2025.utils.FormatterUtils;
 
-import java.text.NumberFormat;
 import java.util.List;
-import java.util.Locale;
 
 public class PagoAdapter extends RecyclerView.Adapter<PagoAdapter.PagoViewHolder> {
     private List<Pago> pagoList;
@@ -57,13 +56,11 @@ public class PagoAdapter extends RecyclerView.Adapter<PagoAdapter.PagoViewHolder
 
         public void bind(Pago pago) {
             // Monto formateado
-            NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("es", "AR"));
-            tvPaymentAmount.setText(formatter.format(pago.getAmount()));
+            tvPaymentAmount.setText(FormatterUtils.formatPrice(pago.getAmount()));
 
             // Fecha formateada
             if (pago.getPaymentDate() != null) {
-                String date = formatDate(pago.getPaymentDate());
-                tvPaymentDate.setText(date);
+                tvPaymentDate.setText(FormatterUtils.formatDate(pago.getPaymentDate()));
             }
 
             // Método de pago traducido
@@ -76,16 +73,6 @@ public class PagoAdapter extends RecyclerView.Adapter<PagoAdapter.PagoViewHolder
                 tvInquilinoName.setText(fullName.trim());
             } else {
                 tvInquilinoName.setText("N/A");
-            }
-        }
-
-        private String formatDate(String dateString) {
-            try {
-                String datePart = dateString.split("T")[0];
-                String[] parts = datePart.split("-");
-                return parts[2] + "/" + parts[1] + "/" + parts[0];
-            } catch (Exception e) {
-                return dateString;
             }
         }
     }
